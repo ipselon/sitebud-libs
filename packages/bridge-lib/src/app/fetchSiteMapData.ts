@@ -1,4 +1,4 @@
-import {SiteMap_Bean} from '@pancodex/domain-lib';
+import {SiteMap_Bean} from '@sitebud/domain-lib';
 import {SiteMapDataFetchStatus, ReadDataFromFileFunc} from './types';
 
 export async function fetchSiteMapData(readDataFunc: ReadDataFromFileFunc, locale?: string, documentSlug?: string): Promise<SiteMapDataFetchStatus> {

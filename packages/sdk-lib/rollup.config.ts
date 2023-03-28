@@ -19,7 +19,7 @@ export default [
             },
         ],
         external: [
-            '@pancodex/domain-lib',
+            '@sitebud/domain-lib',
             '@rollup/plugin-commonjs',
             '@rollup/plugin-image',
             '@rollup/plugin-json',

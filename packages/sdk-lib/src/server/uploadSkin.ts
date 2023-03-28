@@ -21,14 +21,14 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
     const branchTreeData = await getBranchTree(ownerLogin, installationToken, repoName, branchData.commit.sha, true);
 
     const libFilesIndex: Record<string, boolean> = {};
-    const pancodexFilesIndex: Record<string, boolean> = {};
+    const siteBudFilesIndex: Record<string, boolean> = {};
     branchTreeData.tree.forEach((branchTreeItem: GitTreeItem) => {
         if (branchTreeItem.type === 'blob') {
             if (branchTreeItem.path.startsWith('src/theme')) {
                 libFilesIndex[branchTreeItem.path] = true;
             }
-            else if (branchTreeItem.path.startsWith('pancodex')) {
-                pancodexFilesIndex[branchTreeItem.path] = true;
+            else if (branchTreeItem.path.startsWith('siteBud')) {
+                siteBudFilesIndex[branchTreeItem.path] = true;
             }
         }
     });
@@ -72,8 +72,8 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
         let newDistFilePath;
         const distDirPathPrefix = `${distDirPath}/`;
         distFiles.forEach(fileItem => {
-            newDistFilePath = `pancodex/${fileItem.filePath.replace(distDirPathPrefix, '')}`;
-            delete pancodexFilesIndex[newDistFilePath];
+            newDistFilePath = `siteBud/${fileItem.filePath.replace(distDirPathPrefix, '')}`;
+            delete siteBudFilesIndex[newDistFilePath];
             newTreeItems.push({
                 path: newDistFilePath,
                 mode: '100644',
@@ -82,9 +82,9 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
             });
         });
     }
-    Object.keys(pancodexFilesIndex).forEach(pancodexFileKey => {
+    Object.keys(siteBudFilesIndex).forEach(itemFileKey => {
         newTreeItems.push({
-            path: pancodexFileKey,
+            path: itemFileKey,
             mode: '100644',
             type: 'blob',
             sha: null

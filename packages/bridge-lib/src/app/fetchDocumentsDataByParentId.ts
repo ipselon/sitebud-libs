@@ -2,7 +2,7 @@ import {
     SiteMap_Bean,
     DocumentRecord_Bean,
     findDocument
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 import {DocumentDataFetchingStatus, ReadDataFromFileFunc} from './types';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 

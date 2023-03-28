@@ -8,7 +8,7 @@ import {readFile} from './fileUtils';
 import {FileDescription} from '../types';
 import {uploadSkin} from './uploadSkin';
 import path from 'path';
-import {DocumentClass_Index} from '@pancodex/domain-lib';
+import {DocumentClass_Index} from '@sitebud/domain-lib';
 
 const clientSockets: any = {};
 
@@ -146,7 +146,7 @@ export function runServer(options: { distDirPath: string, libDirPath: string; da
     httpServer.listen(socketPort);
 
     app.listen(port, () => {
-        console.info('Pancodex theme SDK server started on port: ' + port);
+        console.info('SiteBud theme SDK server started on port: ' + port);
         console.info('Socket port: ' + socketPort);
     });
 }

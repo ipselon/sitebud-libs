@@ -14,7 +14,7 @@ const config: any = {
             format: 'es',
             assetFileNames: '[name][extname]',
             paths: {
-                '@pancodex/platform-lib': '@/platform',
+                '@sitebud/platform-lib': '@/platform',
             }
         },
     ],
@@ -31,9 +31,9 @@ const config: any = {
         'react',
         'react-dom',
         '@headlessui/react',
-        '@pancodex/bridge-lib',
-        '@pancodex/domain-lib',
-        '@pancodex/platform-lib'
+        '@sitebud/bridge-lib',
+        '@sitebud/domain-lib',
+        '@sitebud/platform-lib'
     ],
     plugins: [
         resolve({preferBuiltins: true}),

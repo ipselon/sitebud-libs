@@ -1,4 +1,4 @@
-import {Image, DocumentContentBlock, DocumentsList} from '@pancodex/domain-lib';
+import {Image, DocumentContentBlock, DocumentsList} from '@sitebud/domain-lib';
 import {PageData, DocumentContext} from './types';
 import {imageResolverInstance} from './imageResolver';
 

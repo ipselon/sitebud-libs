@@ -2,7 +2,7 @@ import {
     DocumentContentBlockClass,
     DocumentClass,
     DocumentContentDataFieldClass
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 
 export type BlockConfig = DocumentContentBlockClass;
 export type DocumentConfig = DocumentClass;

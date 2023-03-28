@@ -10,7 +10,7 @@ import {
     DocumentContentDataField,
     DocumentContentArea,
     Icon, StringValue
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 import {PageData, DataFieldValue} from './types';
 
 type AreasSpecification = Record<string, BlocksSpecification>;

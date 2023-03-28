@@ -3,9 +3,9 @@ import {
     DocumentContent_Bean,
     SiteMap_Bean,
     Document_Common
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 import {DocumentDataFetchingStatus, ReadDataFromFileFunc} from './types';
-import {DocumentContent_Common} from '@pancodex/domain-lib/src';
+import {DocumentContent_Common} from '@sitebud/domain-lib/src';
 
 export async function fetchDocumentDataById(readDataFunc: ReadDataFromFileFunc, siteMap: SiteMap_Bean, documentId: string, locale?: string): Promise<DocumentDataFetchingStatus> {
     let result: DocumentDataFetchingStatus = {};

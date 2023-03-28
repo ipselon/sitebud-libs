@@ -18,8 +18,8 @@ type TemplateObject = {
 type LibName = 'bridgeLib' | 'domainLib';
 
 const defaultLibsPaths: Record<LibName, string> = {
-    bridgeLib: '@pancodex/bridge-lib',
-    domainLib: '@pancodex/domain-lib'
+    bridgeLib: '@sitebud/bridge-lib',
+    domainLib: '@sitebud/domain-lib'
 };
 
 export class AdaptersCommonsGenerator {

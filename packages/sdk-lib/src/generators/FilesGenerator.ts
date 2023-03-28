@@ -1,5 +1,5 @@
 import path from 'path';
-import {DocumentClass, DocumentClass_Index} from '@pancodex/domain-lib';
+import {DocumentClass, DocumentClass_Index} from '@sitebud/domain-lib';
 import {generateJsonFile, readObjectFromFile, deleteDir} from './utilities';
 import {DataContentAdapterGenerator} from './DataContentAdapterGenerator';
 import {AdaptersCommonsGenerator} from './AdaptersCommonsGenerator';

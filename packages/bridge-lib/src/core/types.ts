@@ -10,7 +10,7 @@ import type {
     SiteMap_Bean,
     DocumentContentDataFieldType,
     DocumentsList
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 
 export type {
     Image,

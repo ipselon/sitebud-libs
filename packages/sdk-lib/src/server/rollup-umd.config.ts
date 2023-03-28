@@ -20,9 +20,9 @@ const inputOptions: any = {
         'lodash/unionWith',
         'lodash/isEqual',
         '@headlessui/react',
-        '@pancodex/bridge-lib',
-        '@pancodex/domain-lib',
-        '@pancodex/platform-lib',
+        '@sitebud/bridge-lib',
+        '@sitebud/domain-lib',
+        '@sitebud/platform-lib',
         'react',
         'react-dom',
     ],
@@ -32,7 +32,7 @@ const inputOptions: any = {
         image(),
         commonjs(),
         styles({
-            mode: ['extract', 'pancodex-theme.css']
+            mode: ['extract', 'sitebud-theme.css']
         }),
         typescript({
             tsconfig: false,
@@ -72,8 +72,8 @@ const inputOptions: any = {
         }),
         externalGlobals({
             '@headlessui/react': 'headlessuiReact',
-            '@pancodex/bridge-lib': 'pancodexBridge',
-            '@pancodex/platform-lib': 'pancodexPlatform',
+            '@sitebud/bridge-lib': 'sitebudBridge',
+            '@sitebud/platform-lib': 'sitebudPlatform',
             react: 'React',
             'react-dom': 'ReactDOM'
         }),
@@ -82,8 +82,8 @@ const inputOptions: any = {
 
 const outputOptions: any = {
     format: 'umd',
-    name: 'PancodexTheme',
-    file: 'dist/pancodex-theme.umd.js',
+    name: 'sitebudTheme',
+    file: 'dist/sitebud-theme.umd.js',
     assetFileNames: '[name][extname]',
 };
 

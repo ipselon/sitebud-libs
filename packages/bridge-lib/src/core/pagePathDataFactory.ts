@@ -1,4 +1,4 @@
-import {DocumentRecord_Bean, DocumentContent_Base} from '@pancodex/domain-lib';
+import {DocumentRecord_Bean, DocumentContent_Base} from '@sitebud/domain-lib';
 import {PagePathData, SiteMapDataContext_Proxy} from './types';
 
 function traverseTree(root: DocumentRecord_Bean): Array<PagePathData> {

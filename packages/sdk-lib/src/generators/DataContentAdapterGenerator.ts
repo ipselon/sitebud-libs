@@ -11,7 +11,7 @@ import {
     DocumentContentBlockComponentFieldClass,
     DocumentContentDataFieldClass,
     DocumentContentAreaClass
-} from '@pancodex/domain-lib';
+} from '@sitebud/domain-lib';
 import {formatTS} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
 import {dataContentAdapterTemplate} from './dataContentAdapterTemplate';
@@ -43,8 +43,8 @@ type TemplateObject = {
 type LibName = 'bridgeLib' | 'domainLib';
 
 const defaultLibsPaths: Record<LibName, string> = {
-    bridgeLib: '@pancodex/bridge-lib',
-    domainLib: '@pancodex/domain-lib'
+    bridgeLib: '@sitebud/bridge-lib',
+    domainLib: '@sitebud/domain-lib'
 };
 
 export class DataContentAdapterGenerator {

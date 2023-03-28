@@ -20,7 +20,7 @@ export default {
     external: [
         'react',
         'react-dom',
-        '@pancodex/domain-lib'
+        '@sitebud/domain-lib'
     ],
     plugins: [
         resolve(),
