@@ -72,8 +72,8 @@ const inputOptions: any = {
         }),
         externalGlobals({
             '@headlessui/react': 'headlessuiReact',
-            '@sitebud/bridge-lib': 'sitebudBridge',
-            '@sitebud/platform-lib': 'sitebudPlatform',
+            '@sitebud/bridge-lib': 'siteBudBridge',
+            '@sitebud/platform-lib': 'siteBudPlatform',
             react: 'React',
             'react-dom': 'ReactDOM'
         }),
@@ -82,7 +82,7 @@ const inputOptions: any = {
 
 const outputOptions: any = {
     format: 'umd',
-    name: 'sitebudTheme',
+    name: 'SiteBudTheme',
     file: 'dist/sitebud-theme.umd.js',
     assetFileNames: '[name][extname]',
 };
