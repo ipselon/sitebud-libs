@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build-all": "yarn --cwd ./packages/domain-lib build && yarn --cwd ./packages/bridge-lib build && yarn --cwd ./packages/platform-lib build && yarn --cwd ./packages/sdk-lib build",
+    "dev-all": "yarn --cwd ./packages/domain-lib dev && yarn --cwd ./packages/bridge-lib dev && yarn --cwd ./packages/platform-lib dev && yarn --cwd ./packages/sdk-lib dev"
+  }
+}
