@@ -34,6 +34,7 @@ export type PageData = {
     name?: string;
     content?: PageContent;
     locale?: string;
+    pageDataListByTag?: Record<string, Array<PageData> | null>;
     pageDataListByParentId?: Record<string, Array<PageData> | null>;
     pageDataById?: Record<string, PageData | null>;
 };

@@ -9,9 +9,11 @@ import {
     DocumentsList,
     DocumentContentDataField,
     DocumentContentArea,
-    Icon, StringValue
+    Icon,
+    StringValue
 } from '@sitebud/domain-lib';
 import {PageData, DataFieldValue} from './types';
+import {TagsList} from '@sitebud/domain-lib/src';
 
 type AreasSpecification = Record<string, BlocksSpecification>;
 type BlocksSpecification = Record<string, ComponentsSpecification>;
@@ -85,6 +87,28 @@ export abstract class ContentAdapter<T> {
                                         if (documentId && this._pageData.pageDataById) {
                                             const pageData: PageData | null = this._pageData.pageDataById[documentId];
                                             if (pageData) {
+                                                const adaptedContent: any = this._adaptPageDataCb(pageData);
+                                                if (adaptedContent) {
+                                                    pageContentContextList.push(adaptedContent);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                result[name] = pageContentContextList;
+                            }
+                        }
+                        break;
+                    case 'TagsList':
+                        if (this._adaptPageDataCb) {
+                            const {tags} = (fieldContent as TagsList);
+                            if (tags && tags.length > 0) {
+                                const pageContentContextList: Array<any> = [];
+                                for(const tag of tags) {
+                                    if (tag && this._pageData.pageDataListByTag) {
+                                        const pageDataList: Array<PageData> | null = this._pageData.pageDataListByTag[tag];
+                                        if (pageDataList) {
+                                            for (const pageData of pageDataList) {
                                                 const adaptedContent: any = this._adaptPageDataCb(pageData);
                                                 if (adaptedContent) {
                                                     pageContentContextList.push(adaptedContent);

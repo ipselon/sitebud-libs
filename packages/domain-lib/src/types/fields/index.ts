@@ -5,6 +5,7 @@ import type {Link} from './Link';
 import type {StringValue} from './StringValue';
 import type {DocumentsList} from './DocumentsList';
 import type {Icon} from './Icon';
+import type {TagsList} from './TagsList';
 
 export type AnyFieldType = 'Image'
     | 'HeaderText'
@@ -12,7 +13,8 @@ export type AnyFieldType = 'Image'
     | 'Link'
     | 'StringValue'
     | 'DocumentsList'
-    | 'Icon';
+    | 'Icon'
+    | 'TagsList';
 
 export type AnyField = Image
     | HeaderText
@@ -20,7 +22,8 @@ export type AnyField = Image
     | Link
     | StringValue
     | DocumentsList
-    | Icon;
+    | Icon
+    | TagsList;
 
 export {
     Image,
@@ -29,5 +32,6 @@ export {
     Link,
     StringValue,
     DocumentsList,
-    Icon
+    Icon,
+    TagsList
 }

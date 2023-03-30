@@ -1,6 +1,7 @@
 import {Image, DocumentContentBlock, DocumentsList} from '@sitebud/domain-lib';
 import {PageData, DocumentContext} from './types';
 import {imageResolverInstance} from './imageResolver';
+import {TagsList} from '@sitebud/domain-lib/src';
 
 async function setupSources(documentContentBlock: DocumentContentBlock): Promise<void> {
     const {components} = documentContentBlock;
@@ -48,6 +49,14 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: P
                                                     newPageData.pageDataById = newPageData.pageDataById || {};
                                                     newPageData.pageDataById[documentId] = null;
                                                 }
+                                            }
+                                        }
+                                    } else if (type === 'TagsList') {
+                                        const {tags} = fieldContent as TagsList;
+                                        if (tags && tags.length > 0) {
+                                            for (const tag of tags) {
+                                                newPageData.pageDataListByTag = newPageData.pageDataListByTag || {};
+                                                newPageData.pageDataListByTag[tag] = null;
                                             }
                                         }
                                     }

@@ -50,3 +50,17 @@ export function findDocumentWithUrl(root: DocumentRecord_Bean, documentId: strin
         return foundDocument;
     }
 }
+
+export function getAllDocuments(root: DocumentRecord_Bean, testFunc: (record: DocumentRecord_Bean) => boolean): Array<DocumentRecord_Bean> {
+    let localResultList: Array<DocumentRecord_Bean> = testFunc(root)
+        ? [root]
+        : [];
+    if (root.children && root.children.length > 0) {
+        let childDocument: DocumentRecord_Bean;
+        for (childDocument of root.children) {
+            localResultList = localResultList.concat(getAllDocuments(childDocument, testFunc));
+        }
+    }
+    return localResultList;
+}
+

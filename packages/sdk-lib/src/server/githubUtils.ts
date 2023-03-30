@@ -58,6 +58,19 @@ export async function getBranchTree(
         });
 }
 
+export async function createBlob(owner: string, ghToken: string, repositoryName: string, content: string, encoding: 'base64' | 'utf8') {
+    const octokitInstance: Octokit = getOctokit(ghToken);
+    return octokitInstance.request('POST /repos/{owner}/{repo}/git/blobs', {
+        owner: owner,
+        repo: repositoryName,
+        content,
+        encoding
+    }).then(({data}) => {
+        return data;
+    });
+}
+
+
 export async function createTree(
     owner: string,
     ghToken: string,

@@ -17,6 +17,7 @@ export type DocumentContentBlockComponentFieldClass = {
 export type DocumentContentBlockComponentClass = {
     label: string;
     helpText?: string;
+    imageName?: string; // a big picture that explains what this component is for
     isArray?: boolean;
     indexNumber: number;
     props: Record<string, DocumentContentBlockComponentFieldClass>;
@@ -24,6 +25,7 @@ export type DocumentContentBlockComponentClass = {
 
 export type DocumentContentBlockClass = {
     description: string;
+    imageName?: string; // an icon to depict the block in the list of blocks when the user tries to select the block to append
     isDefault?: boolean;
     components: Record<string, DocumentContentBlockComponentClass>;
 };
@@ -31,7 +33,7 @@ export type DocumentContentBlockClass = {
 export type DocumentContentDataFieldClassVariant = {
     label: string;
     value: string;
-    svg?: string;
+    svg?: string; // for start icon in the option item
 };
 export type DocumentContentDataFieldClassInputType = 'text' | 'select' | 'image';
 export type DocumentContentDataFieldClass = {
@@ -47,6 +49,7 @@ export type DocumentContentDataFieldClass = {
 export type DocumentContentAreaClass = {
     label: string;
     helpText?: string;
+    imageName?: string; // show a picture about what this area is responsible for in the document
     indexNumber: number;
     blocks: Record<string, DocumentContentBlockClass>;
 };
@@ -54,6 +57,7 @@ export type DocumentContentAreaClass = {
 export type DocumentClass = {
     type: DocumentType;
     label: string;
+    imageName?: string; // just an icon of the document class, to distinguish from other document types...
     description: string;
     defaultTitle: string;
     defaultSlug: string;

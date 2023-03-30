@@ -4,6 +4,7 @@ import {fetchSiteMapData} from './fetchSiteMapData';
 import {fetchDocumentData} from './fetchDocumentData';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
+import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
 
 export async function createPaths(readDataFunc: ReadDataFromFileFunc): Promise<Array<PagePathData>> {
     let paths: Array<PagePathData> = [];
@@ -28,7 +29,7 @@ export async function fetchPageData(readDataFunc: ReadDataFromFileFunc, locale?:
         throw Error('Not Found');
     }
     const pageData: PageData = await createPageData(dataFetchStatus.contextProxy);
-    const {pageDataListByParentId, pageDataById} = pageData;
+    const {pageDataListByParentId, pageDataById, pageDataListByTag} = pageData;
     if (pageDataListByParentId) {
         const newPageDataListByParentIdMap: Record<string, Array<PageData>> = {};
         for (const parentId of Object.keys(pageDataListByParentId)) {
@@ -56,6 +57,23 @@ export async function fetchPageData(readDataFunc: ReadDataFromFileFunc, locale?:
             }
         }
         pageData.pageDataById = newPageDataByIdMap;
+    }
+    if (pageDataListByTag) {
+        const newPageDataListByTagMap: Record<string, Array<PageData>> = {};
+        for (const tag of Object.keys(pageDataListByTag)) {
+            const taggedDocumentDataFetchingStatuses: Array<DocumentDataFetchingStatus> =
+                await fetchDocumentsDataByTag(readDataFunc, siteMapDataStatus.contextProxy.siteMap, tag, locale);
+            if (taggedDocumentDataFetchingStatuses.length > 0) {
+                newPageDataListByTagMap[tag] = [];
+                for (const taggedDocumentDataFetchingStatus of taggedDocumentDataFetchingStatuses) {
+                    if (taggedDocumentDataFetchingStatus.contextProxy && !taggedDocumentDataFetchingStatus.isError) {
+                        const taggedPageData: PageData = await createPageData(taggedDocumentDataFetchingStatus.contextProxy);
+                        newPageDataListByTagMap[tag].push(taggedPageData);
+                    }
+                }
+            }
+        }
+        pageData.pageDataListByTag = newPageDataListByTagMap;
     }
     return pageData;
 }

@@ -1,9 +1,16 @@
-import {formatISO} from 'date-fns';
+import {formatISO, format} from 'date-fns';
 import path from 'path';
 import * as rollupLibApi from './rollup-lib-api';
-import {getBranch, getBranchTree, createTree, createCommit, waitForBranchUpdatedWithCommit} from './githubUtils';
+import {
+    getBranch,
+    getBranchTree,
+    createTree,
+    createCommit,
+    waitForBranchUpdatedWithCommit,
+    createBlob
+} from './githubUtils';
 import {GitTreeItem, FileDescription} from '../types';
-import {readAllFilesInDir, readFile} from './fileUtils';
+import {readAllFilesInDir, readFile, readAllImagesInDir} from './fileUtils';
 
 interface UploadOptions {
     ownerLogin: string;
@@ -22,6 +29,7 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
 
     const libFilesIndex: Record<string, boolean> = {};
     const siteBudFilesIndex: Record<string, boolean> = {};
+    const dataImagesFilesIndex: Record<string, boolean> = {};
     branchTreeData.tree.forEach((branchTreeItem: GitTreeItem) => {
         if (branchTreeItem.type === 'blob') {
             if (branchTreeItem.path.startsWith('src/theme')) {
@@ -29,6 +37,8 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
             }
             else if (branchTreeItem.path.startsWith('siteBud')) {
                 siteBudFilesIndex[branchTreeItem.path] = true;
+            } else if (branchTreeItem.path.startsWith('data/images')) {
+                dataImagesFilesIndex[branchTreeItem.path] = true;
             }
         }
     });
@@ -53,6 +63,38 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
     Object.keys(libFilesIndex).forEach(libFileKey => {
         newTreeItems.push({
             path: libFileKey,
+            mode: '100644',
+            type: 'blob',
+            sha: null
+        });
+    });
+
+    const dataImagesFiles = readAllImagesInDir(path.join(dataDirPath, 'images'));
+    if (dataImagesFiles && dataImagesFiles.length > 0) {
+        let newDataImageFilePath;
+        const dataImagesDirPathPrefix = `${path.join(dataDirPath, 'images')}/`;
+        let newBlob;
+        for (const fileItem of dataImagesFiles) {
+            newDataImageFilePath = `data/images/${fileItem.filePath.replace(dataImagesDirPathPrefix, '')}`;
+            try {
+                newBlob = await createBlob(ownerLogin, installationToken, repoName, fileItem.fileData, 'base64');
+            } catch (e) {
+                console.log(`Error creating blob in the repository for ${fileItem.filePath}`);
+            }
+            if (newBlob) {
+                delete dataImagesFilesIndex[newDataImageFilePath];
+                newTreeItems.push({
+                    path: newDataImageFilePath,
+                    mode: '100644',
+                    type: 'blob',
+                    sha: newBlob.sha
+                });
+            }
+        }
+    }
+    Object.keys(dataImagesFilesIndex).forEach(imageFileKey => {
+        newTreeItems.push({
+            path: imageFileKey,
             mode: '100644',
             type: 'blob',
             sha: null
@@ -104,7 +146,7 @@ export async function uploadSkin(uploadOptions: UploadOptions, libDirPath: strin
             email,
             date: formatISO(Date.now())
         },
-        'Update theme preview library'
+        `Update theme library (${format(Date.now(), 'yyyy-MM-dd HH:mm:ss')})`
     );
     await waitForBranchUpdatedWithCommit(ownerLogin, installationToken, repoName, workingBranch, newCommit.sha);
 }
