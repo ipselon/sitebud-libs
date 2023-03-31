@@ -1,7 +1,7 @@
 export const dataContentTypeTemplate: string = `
 <% function printProps(componentName) { componentProps[componentName].forEach(function(prop) { %><% if (prop.type === 'Image') { %><%= prop.name %>: { src: string; alt: string; width: number; height: number; };<% } else if (prop.type === 'HeaderText') { %><%= prop.name %>: string;<% } else if (prop.type === 'ParagraphText') { %><%= prop.name %>: string;<% } else if (prop.type === 'Link') { %><%= prop.name %>: { href: string; target: string; };<% } else if (prop.type === 'DocumentsList' || prop.type === 'TagsList') { %><%= prop.name %>: Array<PageContentContext>;<% } else if (prop.type === 'Icon')  { %><%= prop.name %>: string;<% } else if (prop.type === 'StringValue')  { %><%= prop.name %>: string;<% } %>
 <% });} %> 
-import {PageContentContext, DataFieldType} from './types';
+import {PageContentContext, DataFieldType, GeneralSettings} from './types';
 
 /**
  * Types of the blocks
@@ -56,6 +56,7 @@ export type <%= upperFirst(className) %>Content = {
     slug: string;
     tags: Record<string, number>;
     dateUpdated?: number;
+    generalSettings: GeneralSettings;
     dataFields: <%= upperFirst(className) %>_DataFields;
     documentAreas: <%= upperFirst(className) %>_DocumentAreas;
     commonAreas: <%= upperFirst(className) %>_CommonAreas;

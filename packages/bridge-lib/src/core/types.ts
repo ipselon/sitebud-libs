@@ -11,6 +11,7 @@ import type {
     DocumentContentDataFieldType,
     DocumentsList
 } from '@sitebud/domain-lib';
+import {SiteGeneralSettings} from '@sitebud/domain-lib/src';
 
 export type {
     Image,
@@ -34,6 +35,7 @@ export type PageData = {
     name?: string;
     content?: PageContent;
     locale?: string;
+    generalSettings?: SiteGeneralSettings;
     pageDataListByTag?: Record<string, Array<PageData> | null>;
     pageDataListByParentId?: Record<string, Array<PageData> | null>;
     pageDataById?: Record<string, PageData | null>;

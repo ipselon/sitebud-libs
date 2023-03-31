@@ -73,7 +73,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: P
 export async function createPageData(documentContext: DocumentContext): Promise<PageData> {
     const newPageData: PageData = {};
     if (documentContext) {
-        const {documentClass, documentContent, locale} = documentContext;
+        const {documentClass, documentContent, siteMap, locale} = documentContext;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
                 await processBlocks(documentArea.blocks, newPageData);
@@ -84,6 +84,7 @@ export async function createPageData(documentContext: DocumentContext): Promise<
                 await processBlocks(commonArea.blocks, newPageData);
             }
         }
+        newPageData.generalSettings = siteMap.generalSettings;
         newPageData.content = documentContent;
         newPageData.locale = locale;
         newPageData.name = documentClass;

@@ -4,12 +4,15 @@ import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_Docume
 
 export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content} = this._pageData;
+        const {content, generalSettings} = this._pageData;
         const result: <%= upperFirst(className) %>Content = {
             title: content?.title || 'undefined',
             slug: content?.slug || 'undefined',
             tags: content?.tags || {},
             dateUpdated: content?.dateUpdated,
+            generalSettings: {
+                title: generalSettings?.title || 'undefined'
+            }, 
             dataFields: {},
             documentAreas: {
                 <% documentAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
