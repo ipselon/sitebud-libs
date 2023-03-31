@@ -9,6 +9,7 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
             title: content?.title || 'undefined',
             slug: content?.slug || 'undefined',
             tags: content?.tags || {},
+            dateUpdated: content?.dateUpdated,
             dataFields: {},
             documentAreas: {
                 <% documentAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
