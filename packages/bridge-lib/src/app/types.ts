@@ -20,4 +20,9 @@ export type SiteMapDataFetchStatus = {
     error?: string;
 };
 
-export type ReadDataFromFileFunc = <T>(filePath: string) => Promise<T>;
+/**
+ * This function exists here because of
+ * fs-extra can not be bundled due to missing ESM support:
+ * https://github.com/jprichardson/node-fs-extra/issues/746
+ */
+export type ReadDataFunc = <T>(filePath: string) => Promise<T>;

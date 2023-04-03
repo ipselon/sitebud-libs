@@ -7,12 +7,12 @@ import {AdaptersCommonsGenerator} from './AdaptersCommonsGenerator';
 
 export class FilesGenerator {
     private _dataDirPath: string;
-    private _adaptersDirPath: string;
+    private _themeAdaptersDirPath: string;
     private _documentClasses: DocumentClass_Index;
 
     constructor() {
-        this._dataDirPath = path.join(process.cwd(), '.sitebud');
-        this._adaptersDirPath = path.join(process.cwd(), 'src', 'adapters');
+        this._dataDirPath = path.join(process.cwd(), 'data');
+        this._themeAdaptersDirPath = path.join(process.cwd(), 'src', 'adapters');
         this._documentClasses = {};
     }
 
@@ -30,8 +30,13 @@ export class FilesGenerator {
         return generateJsonFile(prevObject, outputFilePath);
     }
 
-    withAdaptersDir(dirPath: string): FilesGenerator {
-        this._adaptersDirPath = path.join(process.cwd(), dirPath);
+    withDataDir(dirPath: string): FilesGenerator {
+        this._dataDirPath = path.join(process.cwd(), dirPath);
+        return this;
+    }
+
+    withThemeAdaptersDir(dirPath: string): FilesGenerator {
+        this._themeAdaptersDirPath = path.join(process.cwd(), dirPath);
         return this;
     }
 
@@ -41,18 +46,18 @@ export class FilesGenerator {
     }
 
     async generate(): Promise<void> {
-        await deleteDir(this._adaptersDirPath);
+        await deleteDir(this._dataDirPath);
         const documentClassTuples: Array<[string, DocumentClass]> = Object.entries(this._documentClasses);
         let classNames: Array<string> = [];
         for (const documentClassTuple of documentClassTuples) {
             await new DataContentAdapterGenerator(
                 documentClassTuple[0],
                 documentClassTuple[1],
-                this._adaptersDirPath
+                this._themeAdaptersDirPath
             ).generate()
             classNames.push(documentClassTuple[0]);
         }
-        await new AdaptersCommonsGenerator(classNames, this._adaptersDirPath).generate();
+        await new AdaptersCommonsGenerator(classNames, this._themeAdaptersDirPath).generate();
         await generateJsonFile(this._documentClasses, path.join(this._dataDirPath, 'documentClassIndex.json'));
     };
 

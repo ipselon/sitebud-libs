@@ -4,4 +4,6 @@ export * from './pageDataFactory';
 export * from './PageDataProvider';
 export * from './pagePathDataFactory';
 export * from './usePageData';
+export * from './usePreview';
+export * from './externalModules';
 export * from './types';

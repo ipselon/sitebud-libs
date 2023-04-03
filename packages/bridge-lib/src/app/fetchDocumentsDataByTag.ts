@@ -5,10 +5,10 @@ import {
     getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
-import {DocumentDataFetchingStatus, ReadDataFromFileFunc} from './types';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
+import {DocumentDataFetchingStatus} from './types';
 
-export async function fetchDocumentsDataByTag(readDataFunc: ReadDataFromFileFunc, siteMap: SiteMap_Bean, tag: string, locale?: string): Promise<Array<DocumentDataFetchingStatus>> {
+export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string, locale?: string): Promise<Array<DocumentDataFetchingStatus>> {
     const resultList: Array<DocumentDataFetchingStatus> = [];
     if (locale) {
         const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
@@ -17,7 +17,7 @@ export async function fetchDocumentsDataByTag(readDataFunc: ReadDataFromFileFunc
         });
         if (foundDocumentRecords && foundDocumentRecords.length > 0) {
             for (const documentItem of foundDocumentRecords) {
-                resultList.push(await fetchDocumentDataById(readDataFunc, siteMap, documentItem.id, locale));
+                resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, locale));
             }
         }
     }

@@ -2,8 +2,8 @@ import {
     DocumentRecord_Bean,
     SiteMap_Bean,
 } from '@sitebud/domain-lib';
-import {DocumentDataFetchingStatus, ReadDataFromFileFunc} from './types';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
+import {DocumentDataFetchingStatus} from './types';
 
 function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: string): DocumentRecord_Bean | undefined {
     const foundContent = root.contents[locale];
@@ -24,7 +24,7 @@ function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: s
     }
 }
 
-export async function fetchDocumentData(readDataFunc: ReadDataFromFileFunc, siteMap: SiteMap_Bean, locale?: string, documentSlug?: string): Promise<DocumentDataFetchingStatus> {
+export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, documentSlug?: string): Promise<DocumentDataFetchingStatus> {
     let result: DocumentDataFetchingStatus = {};
     try {
         let foundDocument: DocumentRecord_Bean | undefined;
@@ -39,7 +39,7 @@ export async function fetchDocumentData(readDataFunc: ReadDataFromFileFunc, site
         if (!foundDocument) {
             result.isNotFound = true;
         } else {
-            return fetchDocumentDataById(readDataFunc, siteMap, foundDocument.id, locale);
+            return fetchDocumentDataById(siteMap, foundDocument.id, locale);
         }
     } catch (e: any) {
         result = {
