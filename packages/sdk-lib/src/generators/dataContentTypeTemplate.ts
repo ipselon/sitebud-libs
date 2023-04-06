@@ -56,6 +56,7 @@ export type <%= upperFirst(className) %>Content = {
     slug: string;
     tags: Record<string, number>;
     dateUpdated?: number;
+    authors?: Record<string, number>;
     generalSettings: GeneralSettings;
     dataFields: <%= upperFirst(className) %>_DataFields;
     documentAreas: <%= upperFirst(className) %>_DocumentAreas;

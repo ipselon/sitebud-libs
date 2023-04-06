@@ -10,6 +10,7 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
             slug: content?.slug || 'undefined',
             tags: content?.tags || {},
             dateUpdated: content?.dateUpdated,
+            authors: content?.authors,
             generalSettings: {
                 title: generalSettings?.title || 'undefined'
             }, 

@@ -54,6 +54,7 @@ export type DocumentContent_Base = {
     tags: Record<string, number>;
     dateUpdated?: number;
     isCustomSlug?: boolean;
+    authors?: Record<string, number>;
 };
 
 export type DocumentContent_Bean = DocumentContent_Base & {
