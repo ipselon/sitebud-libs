@@ -24,6 +24,7 @@ export type DocumentContentBlockComponentClass = {
 };
 
 export type DocumentContentBlockClass = {
+    label: string;
     description: string;
     imageName?: string; // an icon to depict the block in the list of blocks when the user tries to select the block to append
     isDefault?: boolean;

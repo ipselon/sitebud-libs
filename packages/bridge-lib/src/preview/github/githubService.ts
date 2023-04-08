@@ -60,10 +60,10 @@ export async function getJson(owner: string, ghToken: string, repositoryName: st
 
 export async function getImage(owner: string, ghToken: string, repositoryName: string, sha: string, noCache: boolean = false) {
     const blobContent = await getBlob(owner, ghToken, repositoryName, sha, noCache);
-    return `data:image/*;base64,${blobContent.content}`;
+    return 'data:image/*;base64,' + (blobContent.content ? blobContent.content.replace(/\n/g, '') : '');
 }
 
 export async function getImageSvg(owner: string, ghToken: string, repositoryName: string, sha: string, noCache: boolean = false) {
     const blobContent = await getBlob(owner, ghToken, repositoryName, sha, noCache);
-    return `data:image/svg+xml;base64,${blobContent.content}`;
+    return 'data:image/svg+xml;base64,' + (blobContent.content ? blobContent.content.replace(/\n/g, '') : '');
 }
