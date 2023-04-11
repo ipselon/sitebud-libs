@@ -1,7 +1,7 @@
 export const dataContentTypeTemplate: string = `
-<% function printProps(componentName) { componentProps[componentName].forEach(function(prop) { %><% if (prop.type === 'Image') { %><%= prop.name %>: { src: string; alt: string; width: number; height: number; };<% } else if (prop.type === 'HeaderText') { %><%= prop.name %>: string;<% } else if (prop.type === 'ParagraphText') { %><%= prop.name %>: string;<% } else if (prop.type === 'Link') { %><%= prop.name %>: { href: string; target: string; };<% } else if (prop.type === 'DocumentsList' || prop.type === 'TagsList') { %><%= prop.name %>: Array<PageContentContext>;<% } else if (prop.type === 'Icon')  { %><%= prop.name %>: string;<% } else if (prop.type === 'StringValue')  { %><%= prop.name %>: string;<% } %>
+<% function printProps(componentName) { componentProps[componentName].forEach(function(prop) { %><% if (prop.type === 'Image') { %><%= prop.name %>: { src: string; alt: string; width: number; height: number; };<% } else if (prop.type === 'HeaderText') { %><%= prop.name %>: string;<% } else if (prop.type === 'ParagraphText') { %><%= prop.name %>: string;<% } else if (prop.type === 'Link') { %><%= prop.name %>: { href: string; target: string; };<% } else if (prop.type === 'DocumentsList' || prop.type === 'TagsList') { %><%= prop.name %>: Array<DocumentContentContext>;<% } else if (prop.type === 'Icon')  { %><%= prop.name %>: string;<% } else if (prop.type === 'StringValue')  { %><%= prop.name %>: string;<% } %>
 <% });} %> 
-import {PageContentContext, DataFieldType, GeneralSettings} from './types';
+import {DocumentContentContext,<% if (dataFields && dataFields.length > 0) { %> DataFieldType,<% } %> GeneralSettings} from './types';
 
 /**
  * Types of the blocks
@@ -26,20 +26,21 @@ export type <%= upperFirst(className) %>_DocumentAreas = {
     <% }); %>
 }
 
+<% if (commonAreasNames && commonAreasNames.length > 0) { %>
+<% commonAreasNames.forEach(function(areaName) {%>
 /**
  * Types of the common areas
  */
-<% commonAreasNames.forEach(function(areaName) {%>
 export type <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %> = Array<{
     <% commonAreaBlocksNames[areaName].forEach(function(blockName) { %><%= blockName %>?: <%= upperFirst(className) %>_<%= upperFirst(blockName) %>;<% }); %>
 }>;
 <% }); %>
-
 export type <%= upperFirst(className) %>_CommonAreas = {
     <% commonAreasNames.forEach(function(areaName) {%><%= areaName %>: <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %>;
     <% }); %>
 }
-
+<% } %>
+ <% if (dataFields && dataFields.length > 0) { %>
 /**
  * Type of data fields
  */
@@ -47,9 +48,10 @@ export type <%= upperFirst(className) %>_CommonAreas = {
     <% dataFields.forEach(function(dataFieldName) { %><%= dataFieldName %>?: {value: string; type: DataFieldType;};
     <% }); %>
  }
+ <% } %>
  
 /**
- * Page content type
+ * Document content type
  */
 export type <%= upperFirst(className) %>Content = {
     title: string;
@@ -58,8 +60,8 @@ export type <%= upperFirst(className) %>Content = {
     dateUpdated?: number;
     authors?: Record<string, number>;
     generalSettings: GeneralSettings;
-    dataFields: <%= upperFirst(className) %>_DataFields;
+    <% if (dataFields && dataFields.length > 0) { %>dataFields: <%= upperFirst(className) %>_DataFields;<% } %>
     documentAreas: <%= upperFirst(className) %>_DocumentAreas;
-    commonAreas: <%= upperFirst(className) %>_CommonAreas;
+    <% if (commonAreasNames && commonAreasNames.length > 0) { %>commonAreas: <%= upperFirst(className) %>_CommonAreas;<% } %>
 };
 `;

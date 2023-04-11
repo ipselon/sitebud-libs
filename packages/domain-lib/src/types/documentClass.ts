@@ -60,11 +60,11 @@ export type DocumentClass = {
     label: string;
     imageName?: string; // just an icon of the document class, to distinguish from other document types...
     description: string;
-    defaultTitle: string;
-    defaultSlug: string;
+    defaultTitle?: string;
+    defaultSlug?: string;
     dataFields: Record<string, DocumentContentDataFieldClass>;
     documentAreas: Record<string, DocumentContentAreaClass>
-    commonAreas: Record<string, DocumentContentAreaClass>
+    commonAreas?: Record<string, DocumentContentAreaClass>
 };
 
 export type DocumentClass_Index = Record<string, DocumentClass>;

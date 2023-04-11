@@ -1,26 +1,26 @@
 export const adaptersHooksTemplate: string = `
-import {PageData} from '<%= libPaths.bridgeLib %>';
+import {DocumentData} from '<%= libPaths.bridgeLib %>';
 import { 
-    PageContentContext, 
+    DocumentContentContext, 
 <% classNames.forEach(function(className) {%><%= upperFirst(className) %>ContentAdapter,
 <% }); %>
 } from './types';
 
-function adaptPageData(pageData: PageData): PageContentContext {
-    const pageContentContext: PageContentContext = {};
-    if (pageData && pageData.content && pageData.name) {
-        switch (pageData.name) {
+function adaptDocumentData(documentData: DocumentData): DocumentContentContext {
+    const documentContentContext: DocumentContentContext = {};
+    if (documentData && documentData.content && documentData.name) {
+        switch (documentData.name) {
         <% classNames.forEach(function(className) {%>
             case '<%= upperFirst(className) %>':
-                pageContentContext.<%= lowerFirst(className) %>Content = new <%= upperFirst(className) %>ContentAdapter(pageData, adaptPageData).adapt(); 
+                documentContentContext.<%= lowerFirst(className) %>Content = new <%= upperFirst(className) %>ContentAdapter(documentData, adaptDocumentData).adapt(); 
                 break;
         <% }); %>       
         }
     }
-    return pageContentContext;
+    return documentContentContext;
 }
 
-export function usePageContentContext(pageData: PageData): PageContentContext {
-    return adaptPageData(pageData);
+export function useDocumentDataAdapter(documentData: DocumentData): DocumentContentContext {
+    return adaptDocumentData(documentData);
 }
 `;

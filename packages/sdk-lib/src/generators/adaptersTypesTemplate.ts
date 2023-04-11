@@ -5,7 +5,7 @@ import {<%= upperFirst(className) %>Content} from './<%= upperFirst(className) %
 <% }); %>
 export type DataFieldType = 'string' | 'number';
 export type GeneralSettings = { title: string; };
-export type PageContentContext = {
+export type DocumentContentContext = {
 <% classNames.forEach(function(className) {%>
     <%= lowerFirst(className) %>Content?: <%= upperFirst(className) %>Content;
 <% }); %>

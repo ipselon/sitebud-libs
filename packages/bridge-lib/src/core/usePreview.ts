@@ -1,15 +1,21 @@
 import {useState, useEffect} from 'react';
-import {PageData} from './types';
-import {PreviewBus, getPreviewBusInstance, fetchPageDataPreview} from '../preview';
+import {DocumentData} from './types';
+import {fetchDataPreview} from '../preview/fetchDataPreview';
+import {PreviewBus, getPreviewBusInstance} from '../preview/PreviewBus';
 
-interface PreviewState {
+export interface PreviewState {
     status: 'success' | 'error' | 'uninitialized';
     error?: string;
-    pageDataPreview?: PageData;
+    pageDataPreview: DocumentData;
+    siteDataPreview: DocumentData;
 }
 
-export const usePreview = (isPreview: boolean, locale?: string, slug?: string): any => {
-    const [previewState, setPreviewState] = useState<PreviewState>({status: 'uninitialized'});
+export const usePreview = (isPreview: boolean, locale?: string, slug?: string): PreviewState => {
+    const [previewState, setPreviewState] = useState<PreviewState>({
+        status: 'uninitialized',
+        pageDataPreview: {},
+        siteDataPreview: {}
+    });
     useEffect(() => {
         if (isPreview && previewState.status === 'uninitialized') {
             const previewBus: PreviewBus = getPreviewBusInstance();
@@ -18,28 +24,45 @@ export const usePreview = (isPreview: boolean, locale?: string, slug?: string): 
                     if (error) {
                         console.error(error);
                         setPreviewState({
-                            status: 'error', error: `Preview Error. ${error}`
+                            status: 'error',
+                            error: `Preview Error. ${error}`,
+                            pageDataPreview: {},
+                            siteDataPreview: {}
                         });
                     } else if (!previewBus.previewConfig) {
                         setPreviewState({
-                            status: 'error', error: 'Preview Error. Missing preview config.'
+                            status: 'error',
+                            error: 'Preview Error. Missing preview config.',
+                            pageDataPreview: {},
+                            siteDataPreview: {}
                         });
                     } else if (!locale) {
                         setPreviewState({
-                            status: 'error', error: 'Preview Error. Missing locale identification.'
+                            status: 'error',
+                            error: 'Preview Error. Missing locale identification.',
+                            pageDataPreview: {},
+                            siteDataPreview: {}
                         });
                     } else {
                         console.log('[Home] try to get data from branch');
-                        fetchPageDataPreview(previewBus.changesData, previewBus.previewConfig, locale, slug)
-                            .then((pageDataPreview: PageData) => {
-                                setPreviewState({
-                                    status: 'success',
-                                    pageDataPreview,
-                                });
+                        const {changesData, previewConfig} = previewBus;
+                        fetchDataPreview(changesData, previewConfig, locale, slug)
+                            .then((pageDataPreview: DocumentData) => {
+                                return fetchDataPreview(changesData, previewConfig, locale, '@site')
+                                    .then((siteDataPreview: DocumentData) => {
+                                        setPreviewState({
+                                            status: 'success',
+                                            pageDataPreview,
+                                            siteDataPreview
+                                        });
+                                    });
                             })
                             .catch((error: any) => {
                                 setPreviewState({
-                                    status: 'error', error: `Preview Error. ${error.message}`
+                                    status: 'error',
+                                    error: `Preview Error. ${error.message}`,
+                                    pageDataPreview: {},
+                                    siteDataPreview: {}
                                 });
                             });
                     }

@@ -1,10 +1,10 @@
 export const dataContentAdapterTemplate: string = `
 import {ContentAdapter} from '<%= libPaths.bridgeLib %>';
-import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_DocumentAreas, <%= upperFirst(className) %>_CommonAreas} from './types';
+import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_DocumentAreas, <% if (commonAreasNames && commonAreasNames.length > 0) { %><%= upperFirst(className) %>_CommonAreas<% } %>} from './types';
 
-export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<<%= upperFirst(className) %>Content> {
+export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content, generalSettings} = this._pageData;
+        const {content, generalSettings} = this._documentData;
         const result: <%= upperFirst(className) %>Content = {
             title: content?.title || 'undefined',
             slug: content?.slug || 'undefined',
@@ -13,19 +13,24 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
             authors: content?.authors,
             generalSettings: {
                 title: generalSettings?.title || 'undefined'
-            }, 
+            },
+            <% if (dataFields && dataFields.length > 0) { %> 
             dataFields: {},
+            <% } %>
             documentAreas: {
                 <% documentAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
             },
+            <% if (commonAreasNames && commonAreasNames.length > 0) { %>
             commonAreas: {
                 <% commonAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
             }
+            <% } %>
         };
-
+        <% if (dataFields && dataFields.length > 0) { %>
         if (content?.dataFields && content.dataFields.length > 0) {
             result.dataFields = this.processDataFields(content.dataFields);
         }
+        <% } %>
         <% if (documentAreasNames && documentAreasNames.length > 0) {%>
         if (content?.documentAreas && content.documentAreas.length > 0) {
             result.documentAreas = this.processAreas(content.documentAreas, {
@@ -34,7 +39,7 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
                     <% documentAreaBlocksNames[areaName].forEach(function(blockName) { %>
                             '<%= blockName %>': {                   
                             <% blockComponents[blockName].forEach(function(component) { %>
-                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>'<%= prop.name %>',<% }); %>],
+                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
                             <% }); %>
                             },
                         <% }); %>
@@ -51,7 +56,7 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
                     <% commonAreaBlocksNames[areaName].forEach(function(blockName) { %>
                             '<%= blockName %>': {                   
                             <% blockComponents[blockName].forEach(function(component) { %>
-                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>'<%= prop.name %>',<% }); %>],
+                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
                             <% }); %>
                             },
                         <% }); %>
@@ -60,7 +65,6 @@ export class <%= upperFirst(className) %>ContentAdapter  extends ContentAdapter<
             }) as <%= upperFirst(className) %>_CommonAreas;
         }
         <% } %>
-
         return result;
     }
 }

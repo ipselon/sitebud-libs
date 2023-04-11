@@ -29,24 +29,24 @@ export type DataFieldValue = {
     value: string;
 };
 
-export type PageContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
+export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
 
-export type PageData = {
+export type DocumentData = {
     name?: string;
-    content?: PageContent;
+    content?: DocumentContent;
     locale?: string;
     generalSettings?: SiteGeneralSettings;
-    pageDataListByTag?: Record<string, Array<PageData> | null>;
-    pageDataListByParentId?: Record<string, Array<PageData> | null>;
-    pageDataById?: Record<string, PageData | null>;
+    documentDataListByTag?: Record<string, Array<DocumentData> | null>;
+    documentDataListByParentId?: Record<string, Array<DocumentData> | null>;
+    documentDataById?: Record<string, DocumentData | null>;
 };
 
-export type PagePathParams = {
+export type DocumentPathParams = {
     route_path: Array<string>;
 };
 
-export type PagePathData = {
-    params: PagePathParams;
+export type DocumentPathData = {
+    params: DocumentPathParams;
     locale?: string;
 };
 

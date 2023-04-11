@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react';
-import {PageData} from './types';
+import {DocumentData} from './types';
 
 export type PageDataProviderProps = {
-    pageData: PageData;
+    pageData: DocumentData;
     children: ReactNode;
 };
 
-export const PageDataContext = React.createContext<PageData>({});
+export const PageDataContext = React.createContext<DocumentData>({});
 
 export const PageDataProvider: React.FC<PageDataProviderProps> = (props) => {
     const { children, pageData } = props;

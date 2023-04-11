@@ -1,5 +1,5 @@
 import {Image, DocumentContentBlock, DocumentsList} from '@sitebud/domain-lib';
-import {PageData, DocumentContext} from './types';
+import {DocumentData, DocumentContext} from './types';
 import {imageResolverInstance} from './imageResolver';
 import {TagsList} from '@sitebud/domain-lib/src';
 
@@ -25,7 +25,7 @@ async function setupSources(documentContentBlock: DocumentContentBlock): Promise
     }
 }
 
-async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: PageData): Promise<void> {
+async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentData: DocumentData): Promise<void> {
     if (blocks && blocks.length > 0) {
         for (const documentContentBlock of blocks) {
             await setupSources(documentContentBlock);
@@ -41,13 +41,13 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: P
                                         if (documentsIds && documentsIds.length > 0) {
                                             if (selectionMode === 'selectChildrenDocuments') {
                                                 for (const parentDocumentId of documentsIds) {
-                                                    newPageData.pageDataListByParentId = newPageData.pageDataListByParentId || {};
-                                                    newPageData.pageDataListByParentId[parentDocumentId] = null;
+                                                    newDocumentData.documentDataListByParentId = newDocumentData.documentDataListByParentId || {};
+                                                    newDocumentData.documentDataListByParentId[parentDocumentId] = null;
                                                 }
                                             } else if (selectionMode === 'selectDocuments') {
                                                 for (const documentId of documentsIds) {
-                                                    newPageData.pageDataById = newPageData.pageDataById || {};
-                                                    newPageData.pageDataById[documentId] = null;
+                                                    newDocumentData.documentDataById = newDocumentData.documentDataById || {};
+                                                    newDocumentData.documentDataById[documentId] = null;
                                                 }
                                             }
                                         }
@@ -55,8 +55,8 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: P
                                         const {tags} = fieldContent as TagsList;
                                         if (tags && tags.length > 0) {
                                             for (const tag of tags) {
-                                                newPageData.pageDataListByTag = newPageData.pageDataListByTag || {};
-                                                newPageData.pageDataListByTag[tag] = null;
+                                                newDocumentData.documentDataListByTag = newDocumentData.documentDataListByTag || {};
+                                                newDocumentData.documentDataListByTag[tag] = null;
                                             }
                                         }
                                     }
@@ -70,25 +70,25 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newPageData: P
     }
 }
 
-export async function createPageData(documentContext: DocumentContext): Promise<PageData> {
-    const newPageData: PageData = {};
+export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
+    const newDocumentData: DocumentData = {};
     if (documentContext) {
         const {documentClass, documentContent, siteMap, locale} = documentContext;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
-                await processBlocks(documentArea.blocks, newPageData);
+                await processBlocks(documentArea.blocks, newDocumentData);
             }
         }
         if (documentContent.commonAreas && documentContent.commonAreas.length > 0) {
             for (const commonArea of documentContent.commonAreas) {
-                await processBlocks(commonArea.blocks, newPageData);
+                await processBlocks(commonArea.blocks, newDocumentData);
             }
         }
-        newPageData.generalSettings = siteMap.generalSettings;
-        newPageData.content = documentContent;
-        newPageData.locale = locale;
-        newPageData.name = documentClass;
+        newDocumentData.generalSettings = siteMap.generalSettings;
+        newDocumentData.content = documentContent;
+        newDocumentData.locale = locale;
+        newDocumentData.name = documentClass;
     }
 
-    return newPageData;
+    return newDocumentData;
 }

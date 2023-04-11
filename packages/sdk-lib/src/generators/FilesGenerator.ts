@@ -35,7 +35,7 @@ export class FilesGenerator {
         return this;
     }
 
-    withDocumentClasses(index: DocumentClass_Index): FilesGenerator {
+    withDocuments(index: DocumentClass_Index): FilesGenerator {
         this._documentClasses = {...this._documentClasses, ...index};
         return this;
     }
@@ -55,5 +55,4 @@ export class FilesGenerator {
         await new AdaptersCommonsGenerator(classNames, this._adaptersDirPath).generate();
         await generateJsonFile(this._documentClasses, path.join(this._dataDirPath, 'documentClassIndex.json'));
     };
-
 }

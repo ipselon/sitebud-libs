@@ -1,8 +1,8 @@
 import {DocumentRecord_Bean, DocumentContent_Base} from '@sitebud/domain-lib';
-import {PagePathData, SiteMapDataContext_Proxy} from './types';
+import {DocumentPathData, SiteMapDataContext_Proxy} from './types';
 
-function traverseTree(root: DocumentRecord_Bean): Array<PagePathData> {
-    let accumulatorLocal: Array<PagePathData> = [];
+function traverseTree(root: DocumentRecord_Bean): Array<DocumentPathData> {
+    let accumulatorLocal: Array<DocumentPathData> = [];
     if (root.type !== 'site') {
         let content: DocumentContent_Base | undefined;
         Object.keys(root.contents).forEach((locale: string) => {
@@ -26,8 +26,8 @@ function traverseTree(root: DocumentRecord_Bean): Array<PagePathData> {
     return accumulatorLocal;
 }
 
-export function createPagePathDataList(contextProxy: SiteMapDataContext_Proxy): Array<PagePathData> {
-    let result: Array<PagePathData> = [];
+export function createDocumentPathDataList(contextProxy: SiteMapDataContext_Proxy): Array<DocumentPathData> {
+    let result: Array<DocumentPathData> = [];
     const {siteMap} = contextProxy;
     if (siteMap) {
         result = traverseTree(siteMap.root);

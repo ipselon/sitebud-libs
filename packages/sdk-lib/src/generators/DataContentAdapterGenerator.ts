@@ -127,11 +127,13 @@ export class DataContentAdapterGenerator {
         result.blockComponents = documentAreasTemplateObject.areaBlockComponents;
         result.componentProps = documentAreasTemplateObject.areaComponentProps;
 
-        const commonAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.commonAreas);
-        result.commonAreasNames = commonAreasTemplateObject.areasNames;
-        result.commonAreaBlocksNames = commonAreasTemplateObject.areaBlocksNames;
-        result.blockComponents = {...result.blockComponents, ...commonAreasTemplateObject.areaBlockComponents};
-        result.componentProps = {...result.componentProps, ...commonAreasTemplateObject.areaComponentProps};
+        if (this._documentClass.commonAreas) {
+            const commonAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.commonAreas);
+            result.commonAreasNames = commonAreasTemplateObject.areasNames;
+            result.commonAreaBlocksNames = commonAreasTemplateObject.areaBlocksNames;
+            result.blockComponents = {...result.blockComponents, ...commonAreasTemplateObject.areaBlockComponents};
+            result.componentProps = {...result.componentProps, ...commonAreasTemplateObject.areaComponentProps};
+        }
 
         return result;
     }

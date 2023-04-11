@@ -8,7 +8,9 @@ import {
     getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
-import {createPageData, PageData, setImageResolver, ImageResolverFunc} from '../core';
+import {createDocumentData} from '../core/documentDataFactory';
+import type {DocumentData} from '../core/types';
+import {setImageResolver} from '../core/imageResolver';
 import {
     getBranch,
     getBranchTree,
@@ -131,13 +133,13 @@ function findDocumentBySlug(root: DocumentRecord_Bean, documentSlug: string, loc
     }
 }
 
-async function fetchPageById(
+async function fetchDocumentDataById(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
     documentId: string,
     locale: string
-): Promise<PageData> {
-    let result: PageData = {};
+): Promise<DocumentData> {
+    let result: DocumentData = {};
     const ownerLogin: string | undefined = previewConfig.owner;
     const repoName: string = previewConfig.repo;
     let document: Document_Bean | undefined = getChanges(`${ownerLogin}/${repoName}__documents__${documentId}`);
@@ -162,7 +164,7 @@ async function fetchPageById(
         } else {
             documentContent.commonAreas = [];
         }
-        result = await createPageData({
+        result = await createDocumentData({
             documentClass: document.documentClass,
             locale,
             siteMap,
@@ -173,13 +175,13 @@ async function fetchPageById(
     return result;
 }
 
-async function fetchPageBySlug(
+async function fetchDocumentDataBySlug(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
     locale: string,
     documentSlug?: string
-): Promise<PageData> {
-    let result: PageData = {};
+): Promise<DocumentData> {
+    let result: DocumentData = {};
     let foundDocument: DocumentRecord_Bean | undefined;
     if (documentSlug) {
         foundDocument = findDocumentBySlug(siteMap.root, documentSlug, locale);
@@ -190,41 +192,41 @@ async function fetchPageBySlug(
         foundDocument = siteMap.root.children.find(i => i.type === 'main_page');
     }
     if (foundDocument) {
-        result = await fetchPageById(previewConfig, siteMap, foundDocument.id, locale);
+        result = await fetchDocumentDataById(previewConfig, siteMap, foundDocument.id, locale);
     }
     return result;
 }
 
-async function fetchPagesByParentId(
+async function fetchDocumentsDataByParentId(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
     parentDocumentId: string,
     locale: string
-): Promise<Array<PageData>> {
-    const resultList: Array<PageData> = [];
+): Promise<Array<DocumentData>> {
+    const resultList: Array<DocumentData> = [];
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
         for (const documentItem of foundParentDocumentRecord.children) {
-            resultList.push(await fetchPageById(previewConfig, siteMap, documentItem.id, locale));
+            resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
         }
     }
     return resultList;
 }
 
-async function fetchPagesByTag(
+async function fetchDocumentsDataByTag(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
     tag: string,
     locale: string
-): Promise<Array<PageData>> {
-    const resultList: Array<PageData> = [];
+): Promise<Array<DocumentData>> {
+    const resultList: Array<DocumentData> = [];
     const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
         const foundDocumentContent: DocumentContent_Base | undefined = documentRecord.contents[locale];
         return !!foundDocumentContent && foundDocumentContent.tags[tag] >= 1;
     });
     if (foundDocumentRecords && foundDocumentRecords.length > 0) {
         for (const documentItem of foundDocumentRecords) {
-            resultList.push(await fetchPageById(previewConfig, siteMap, documentItem.id, locale));
+            resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
         }
     }
     return resultList;
@@ -243,14 +245,14 @@ async function fetchSiteMap(previewConfig: PreviewConfig): Promise<SiteMap_Bean>
     return siteMap;
 }
 
-async function fetchPageData(previewConfig: PreviewConfig, locale: string, slug?: string): Promise<PageData> {
+async function fetchDocumentData(previewConfig: PreviewConfig, locale: string, slug?: string): Promise<DocumentData> {
     const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
-    const result: PageData = await fetchPageBySlug(previewConfig, siteMap, locale, slug);
-    if (result.pageDataListByParentId) {
-        const newPageDataListByParentIdMap: Record<string, Array<PageData>> = {};
-        for (const parentId of Object.keys(result.pageDataListByParentId)) {
-            const childrenDocumentData: Array<PageData> =
-                await fetchPagesByParentId(previewConfig, siteMap, parentId, locale);
+    const result: DocumentData = await fetchDocumentDataBySlug(previewConfig, siteMap, locale, slug);
+    if (result.documentDataListByParentId) {
+        const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};
+        for (const parentId of Object.keys(result.documentDataListByParentId)) {
+            const childrenDocumentData: Array<DocumentData> =
+                await fetchDocumentsDataByParentId(previewConfig, siteMap, parentId, locale);
             if (childrenDocumentData.length > 0) {
                 newPageDataListByParentIdMap[parentId] = [];
                 for (const childDocumentData of childrenDocumentData) {
@@ -260,24 +262,24 @@ async function fetchPageData(previewConfig: PreviewConfig, locale: string, slug?
                 }
             }
         }
-        result.pageDataListByParentId = newPageDataListByParentIdMap;
+        result.documentDataListByParentId = newPageDataListByParentIdMap;
     }
-    if (result.pageDataById) {
-        const newPageDataByIdMap: Record<string, PageData> = {};
-        for (const documentId of Object.keys(result.pageDataById)) {
-            const documentData: PageData =
-                await fetchPageById(previewConfig, siteMap, documentId, locale);
+    if (result.documentDataById) {
+        const newPageDataByIdMap: Record<string, DocumentData> = {};
+        for (const documentId of Object.keys(result.documentDataById)) {
+            const documentData: DocumentData =
+                await fetchDocumentDataById(previewConfig, siteMap, documentId, locale);
             if (documentData && documentData.content) {
                 newPageDataByIdMap[documentId] = documentData;
             }
         }
-        result.pageDataById = newPageDataByIdMap;
+        result.documentDataById = newPageDataByIdMap;
     }
-    if (result.pageDataListByTag) {
-        const newPageDataListByTagMap: Record<string, Array<PageData>> = {};
-        for (const tag of Object.keys(result.pageDataListByTag)) {
-            const tagsDocumentData: Array<PageData> =
-                await fetchPagesByTag(previewConfig, siteMap, tag, locale);
+    if (result.documentDataListByTag) {
+        const newPageDataListByTagMap: Record<string, Array<DocumentData>> = {};
+        for (const tag of Object.keys(result.documentDataListByTag)) {
+            const tagsDocumentData: Array<DocumentData> =
+                await fetchDocumentsDataByTag(previewConfig, siteMap, tag, locale);
             if (tagsDocumentData.length > 0) {
                 newPageDataListByTagMap[tag] = [];
                 for (const tagDocumentData of tagsDocumentData) {
@@ -287,7 +289,7 @@ async function fetchPageData(previewConfig: PreviewConfig, locale: string, slug?
                 }
             }
         }
-        result.pageDataListByTag = newPageDataListByTagMap;
+        result.documentDataListByTag = newPageDataListByTagMap;
     }
     return result;
 }
@@ -310,7 +312,7 @@ export async function fetchImageData(previewConfig: PreviewConfig, filePath: str
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
 
-export async function fetchPageDataPreview(changesData: any, previewConfig: PreviewConfig, locale: string, slug?: string): Promise<PageData> {
+export async function fetchDataPreview(changesData: any, previewConfig: PreviewConfig, locale: string, slug?: string): Promise<DocumentData> {
     setChangesBulk(changesData);
     setImageResolver(async (imgSrc?: string | null) => {
         if (imgSrc && imgSrc.startsWith("/_assets/images")) {
@@ -318,5 +320,5 @@ export async function fetchPageDataPreview(changesData: any, previewConfig: Prev
         }
         return imgSrc || '';
     });
-    return await fetchPageData(previewConfig, locale, slug);
+    return await fetchDocumentData(previewConfig, locale, slug);
 }

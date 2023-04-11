@@ -1,7 +1,7 @@
 import {useContext} from 'react';
 import {PageDataContext} from './PageDataProvider';
-import {PageData} from './types';
+import {DocumentData} from './types';
 
-export const usePageData = (): PageData => {
+export const usePageData = (): DocumentData => {
     return useContext(PageDataContext);
 };
