@@ -227,7 +227,6 @@ export abstract class ContentAdapter<T> {
                 result[area.name] = this.processBlocks(area.blocks, foundBlocksSpec);
             } else {
                 result[area.name] = {};
-                console.error(`[SiteBud ContentAdapter] Missing the "${area.name}" area in the "${this._documentData.name}" document data schema.`);
             }
         }
         return result;
