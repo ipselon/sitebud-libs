@@ -4,17 +4,16 @@ import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_Docume
 
 export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content, generalSettings} = this._documentData;
+        const {content <% if (documentType !== 'site') {%>, path<% } %><% if (documentType === 'site') {%>, tagsLinks<% } %>} = this._documentData;
         const result: <%= upperFirst(className) %>Content = {
-            title: content?.title || 'undefined',
-            slug: content?.slug || 'undefined',
-            tags: content?.tags || {},
-            dateUpdated: content?.dateUpdated,
-            authors: content?.authors,
-            generalSettings: {
-                title: generalSettings?.title || 'undefined'
-            },
-            <% if (dataFields && dataFields.length > 0) { %> 
+            <% if (documentType !== 'site') {%>title: content?.title || 'undefined',<% } %>
+            <% if (documentType !== 'site') {%>slug: content?.slug || 'undefined',<% } %>
+            <% if (documentType !== 'site') {%>tags: content?.tags || {},<% } %>
+            <% if (documentType !== 'site') {%>dateUpdated: content?.dateUpdated,<% } %>
+            <% if (documentType !== 'site') {%>authors: content?.authors,<% } %>
+            <% if (documentType !== 'site') {%>path: path || '',<% } %>
+            <% if (documentType === 'site') {%>tagsLinks: tagsLinks || {},<% } %>
+            <% if (dataFields && dataFields.length > 0) { %>
             dataFields: {},
             <% } %>
             documentAreas: {

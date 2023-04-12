@@ -8,7 +8,7 @@ import {
     getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
-import {createDocumentData} from '../core/documentDataFactory';
+import {createDocumentData, enhanceDocumentData} from '../core/documentDataFactory';
 import type {DocumentData} from '../core/types';
 import {setImageResolver} from '../core/imageResolver';
 import {
@@ -22,6 +22,7 @@ import {
 import {PreviewConfig} from './PreviewBus';
 import {FileDataFetchingStatus} from './types';
 import {getChanges, setChangesBulk} from './localStorage';
+import {Data} from '../core';
 
 const fileRefCache: Map<string, any> = new Map<string, any>();
 
@@ -245,8 +246,7 @@ async function fetchSiteMap(previewConfig: PreviewConfig): Promise<SiteMap_Bean>
     return siteMap;
 }
 
-async function fetchDocumentData(previewConfig: PreviewConfig, locale: string, slug?: string): Promise<DocumentData> {
-    const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
+async function fetchDocumentData(previewConfig: PreviewConfig, siteMap: SiteMap_Bean, locale: string, slug?: string): Promise<DocumentData> {
     const result: DocumentData = await fetchDocumentDataBySlug(previewConfig, siteMap, locale, slug);
     if (result.documentDataListByParentId) {
         const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};
@@ -291,7 +291,7 @@ async function fetchDocumentData(previewConfig: PreviewConfig, locale: string, s
         }
         result.documentDataListByTag = newPageDataListByTagMap;
     }
-    return result;
+    return enhanceDocumentData(result, siteMap, locale);
 }
 
 export async function fetchFileData(previewConfig: PreviewConfig, filePath: string, noCache: boolean = false): Promise<FileDataFetchingStatus> {
@@ -312,7 +312,7 @@ export async function fetchImageData(previewConfig: PreviewConfig, filePath: str
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
 
-export async function fetchDataPreview(changesData: any, previewConfig: PreviewConfig, locale: string, slug?: string): Promise<DocumentData> {
+export async function fetchDataPreview(changesData: any, previewConfig: PreviewConfig, locale: string, slug?: string): Promise<Data> {
     setChangesBulk(changesData);
     setImageResolver(async (imgSrc?: string | null) => {
         if (imgSrc && imgSrc.startsWith("/_assets/images")) {
@@ -320,5 +320,11 @@ export async function fetchDataPreview(changesData: any, previewConfig: PreviewC
         }
         return imgSrc || '';
     });
-    return await fetchDocumentData(previewConfig, locale, slug);
+    const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
+    const pageData: DocumentData = await fetchDocumentData(previewConfig, siteMap, locale, slug);
+    const siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, locale, '@site');
+    return {
+        pageData,
+        siteData
+    }
 }

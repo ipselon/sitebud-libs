@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {DocumentData} from './types';
+import {DocumentData, Data} from './types';
 import {fetchDataPreview} from '../preview/fetchDataPreview';
 import {PreviewBus, getPreviewBusInstance} from '../preview/PreviewBus';
 
@@ -44,18 +44,14 @@ export const usePreview = (isPreview: boolean, locale?: string, slug?: string): 
                             siteDataPreview: {}
                         });
                     } else {
-                        console.log('[Home] try to get data from branch');
                         const {changesData, previewConfig} = previewBus;
                         fetchDataPreview(changesData, previewConfig, locale, slug)
-                            .then((pageDataPreview: DocumentData) => {
-                                return fetchDataPreview(changesData, previewConfig, locale, '@site')
-                                    .then((siteDataPreview: DocumentData) => {
-                                        setPreviewState({
-                                            status: 'success',
-                                            pageDataPreview,
-                                            siteDataPreview
-                                        });
-                                    });
+                            .then((dataPreview: Data) => {
+                                setPreviewState({
+                                    status: 'success',
+                                    pageDataPreview: dataPreview.pageData,
+                                    siteDataPreview: dataPreview.siteData
+                                });
                             })
                             .catch((error: any) => {
                                 setPreviewState({

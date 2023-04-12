@@ -1,5 +1,5 @@
 export const adaptersHooksTemplate: string = `
-import {DocumentData} from '<%= libPaths.bridgeLib %>';
+import {Data, DocumentData} from '<%= libPaths.bridgeLib %>';
 import { 
     DocumentContentContext, 
 <% classNames.forEach(function(className) {%><%= upperFirst(className) %>ContentAdapter,
@@ -20,7 +20,14 @@ function adaptDocumentData(documentData: DocumentData): DocumentContentContext {
     return documentContentContext;
 }
 
-export function useDocumentDataAdapter(documentData: DocumentData): DocumentContentContext {
-    return adaptDocumentData(documentData);
+function adaptData(data: Data): DocumentContentContext {
+    const {pageData, siteData} = data;
+    let documentContentContext: DocumentContentContext = adaptDocumentData(pageData);
+    documentContentContext = {...documentContentContext, ...adaptDocumentData(siteData)}; 
+    return documentContentContext;
+}
+
+export function useDocumentDataAdapter(data: Data): DocumentContentContext {
+    return adaptData(data);
 }
 `;

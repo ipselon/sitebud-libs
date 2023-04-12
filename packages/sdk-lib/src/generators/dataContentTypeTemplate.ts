@@ -1,7 +1,7 @@
 export const dataContentTypeTemplate: string = `
 <% function printProps(componentName) { componentProps[componentName].forEach(function(prop) { %><% if (prop.type === 'Image') { %><%= prop.name %>: { src: string; alt: string; width: number; height: number; };<% } else if (prop.type === 'HeaderText') { %><%= prop.name %>: string;<% } else if (prop.type === 'ParagraphText') { %><%= prop.name %>: string;<% } else if (prop.type === 'Link') { %><%= prop.name %>: { href: string; target: string; };<% } else if (prop.type === 'DocumentsList' || prop.type === 'TagsList') { %><%= prop.name %>: Array<DocumentContentContext>;<% } else if (prop.type === 'Icon')  { %><%= prop.name %>: string;<% } else if (prop.type === 'StringValue')  { %><%= prop.name %>: string;<% } %>
 <% });} %> 
-import {DocumentContentContext,<% if (dataFields && dataFields.length > 0) { %> DataFieldType,<% } %> GeneralSettings} from './types';
+import {DocumentContentContext,<% if (dataFields && dataFields.length > 0) { %> DataFieldType<% } %>} from './types';
 
 /**
  * Types of the blocks
@@ -54,12 +54,13 @@ export type <%= upperFirst(className) %>_CommonAreas = {
  * Document content type
  */
 export type <%= upperFirst(className) %>Content = {
-    title: string;
-    slug: string;
-    tags: Record<string, number>;
-    dateUpdated?: number;
-    authors?: Record<string, number>;
-    generalSettings: GeneralSettings;
+    <% if (documentType !== 'site') {%>title: string;<% } %>
+    <% if (documentType !== 'site') {%>slug: string;<% } %>
+    <% if (documentType !== 'site') {%>tags: Record<string, number>;<% } %>
+    <% if (documentType !== 'site') {%>dateUpdated?: number;<% } %>
+    <% if (documentType !== 'site') {%>authors?: Record<string, number>;<% } %>
+    <% if (documentType !== 'site') {%>path: string;<% } %>
+    <% if (documentType === 'site') {%>tagsLinks: Record<string, string>;<% } %>
     <% if (dataFields && dataFields.length > 0) { %>dataFields: <%= upperFirst(className) %>_DataFields;<% } %>
     documentAreas: <%= upperFirst(className) %>_DocumentAreas;
     <% if (commonAreasNames && commonAreasNames.length > 0) { %>commonAreas: <%= upperFirst(className) %>_CommonAreas;<% } %>

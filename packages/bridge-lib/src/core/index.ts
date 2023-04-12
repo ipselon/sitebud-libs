@@ -1,11 +1,7 @@
 export * from './ContentAdapter';
-// export * from './imageResolver';
-// export * from './documentDataFactory';
 export * from './PageDataProvider';
 export * from './SiteDataProvider';
-// export * from './documentPathDataFactory';
-export * from './usePageData';
+export * from './useData';
 export * from './usePreview';
-export * from './useSiteData';
 export * from './externalModules';
 export * from './types';

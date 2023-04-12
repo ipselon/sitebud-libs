@@ -1,7 +1,55 @@
-import {Image, DocumentContentBlock, DocumentsList} from '@sitebud/domain-lib';
-import {DocumentData, DocumentContext} from './types';
+import {
+    Image,
+    DocumentContentBlock,
+    DocumentsList,
+    DocumentRecord_Bean,
+    DocumentContent_Base,
+    TagsList, SiteMap_Bean
+} from '@sitebud/domain-lib';
+import {DocumentData, DocumentContext, SiteMap_Index} from './types';
 import {imageResolverInstance} from './imageResolver';
-import {TagsList} from '@sitebud/domain-lib/src';
+
+export function makeSiteIndex(
+    root: DocumentRecord_Bean,
+    accumulator: SiteMap_Index = {},
+    defaultLocale: string,
+    locale?: string,
+    rootNodePath?: Array<DocumentRecord_Bean>
+): SiteMap_Index {
+    let accumulatorLocal: SiteMap_Index = {...accumulator};
+    let slugPath: string = '';
+    const validLocale: string = locale || defaultLocale;
+    const localNodePath: Array<DocumentRecord_Bean> = rootNodePath ? [...rootNodePath, root] : [root];
+    if (localNodePath.length > 0) {
+        localNodePath.forEach((nodeItem: DocumentRecord_Bean) => {
+            let content: DocumentContent_Base | undefined = nodeItem.contents[validLocale];
+            if (content) {
+                slugPath += `/${content.slug}`;
+            } else {
+                content = nodeItem.contents[defaultLocale];
+                if (content) {
+                    slugPath += `/${content.slug}`;
+                }
+            }
+        });
+    }
+    accumulatorLocal[root.id] = {
+        nodePath: root.contents[validLocale] ? slugPath.replace('/@site/', '') : '',
+    };
+    if (root.children && root.children.length > 0) {
+        let childDocument: DocumentRecord_Bean;
+        for (childDocument of root.children) {
+            accumulatorLocal = makeSiteIndex(
+                childDocument,
+                accumulatorLocal,
+                defaultLocale,
+                locale,
+                [...localNodePath]
+            );
+        }
+    }
+    return accumulatorLocal;
+}
 
 async function setupSources(documentContentBlock: DocumentContentBlock): Promise<void> {
     const {components} = documentContentBlock;
@@ -73,7 +121,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
 export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
     const newDocumentData: DocumentData = {};
     if (documentContext) {
-        const {documentClass, documentContent, siteMap, locale} = documentContext;
+        const {documentClass, documentContent, siteMap, locale, documentId} = documentContext;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
                 await processBlocks(documentArea.blocks, newDocumentData);
@@ -84,6 +132,7 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
                 await processBlocks(commonArea.blocks, newDocumentData);
             }
         }
+        newDocumentData.id = documentId;
         newDocumentData.generalSettings = siteMap.generalSettings;
         newDocumentData.content = documentContent;
         newDocumentData.locale = locale;
@@ -92,3 +141,52 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
 
     return newDocumentData;
 }
+
+export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): DocumentData {
+    const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, {}, siteMap.defaultLocale, locale);
+    if (documentData.id) {
+        documentData.path = siteIndex[documentData.id].nodePath;
+    }
+    const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
+    if (documentDataById) {
+        for(const documentDataItem of Object.entries(documentDataById)) {
+            if (documentDataItem[1] && documentDataItem[1].id && siteIndex[documentDataItem[1].id]) {
+                documentDataItem[1].path = siteIndex[documentDataItem[1].id].nodePath;
+            }
+        }
+    }
+    if (documentDataListByParentId) {
+        for(const documentDataParentItem of Object.entries(documentDataListByParentId)) {
+            if (documentDataParentItem[1] && documentDataParentItem[1].length > 0) {
+                for (const documentDataItem of documentDataParentItem[1]) {
+                    if (documentDataItem.id && siteIndex[documentDataItem.id]) {
+                        documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
+                    }
+                }
+            }
+        }
+    }
+    if (documentDataListByTag) {
+        for(const documentDataTagItem of Object.entries(documentDataListByTag)) {
+            if (documentDataTagItem[1] && documentDataTagItem[1].length > 0) {
+                for (const documentDataItem of documentDataTagItem[1]) {
+                    if (documentDataItem.id && siteIndex[documentDataItem.id]) {
+                        documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
+                    }
+                }
+            }
+        }
+    }
+    documentData.tagsLinks = {};
+    if (siteMap.tagsLinks) {
+        const validLocale: string = locale || siteMap.defaultLocale;
+        const localeTagsLinks: Record<string, string> | undefined = siteMap.tagsLinks[validLocale];
+        if (localeTagsLinks) {
+            for (const tagLink of Object.entries(localeTagsLinks)) {
+                documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
+            }
+        }
+    }
+    return documentData;
+}
+

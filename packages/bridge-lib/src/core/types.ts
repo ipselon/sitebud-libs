@@ -9,9 +9,9 @@ import type {
     DocumentContent_Bean,
     SiteMap_Bean,
     DocumentContentDataFieldType,
-    DocumentsList
+    DocumentsList,
+    SiteGeneralSettings
 } from '@sitebud/domain-lib';
-import {SiteGeneralSettings} from '@sitebud/domain-lib/src';
 
 export type {
     Image,
@@ -32,9 +32,12 @@ export type DataFieldValue = {
 export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
 
 export type DocumentData = {
+    id?: string;
     name?: string;
     content?: DocumentContent;
+    path?: string;
     locale?: string;
+    tagsLinks?: Record<string, string>;
     generalSettings?: SiteGeneralSettings;
     documentDataListByTag?: Record<string, Array<DocumentData> | null>;
     documentDataListByParentId?: Record<string, Array<DocumentData> | null>;
@@ -60,4 +63,15 @@ export type DocumentContext = {
 
 export type SiteMapDataContext_Proxy = {
     siteMap: SiteMap_Bean;
+};
+
+export type SiteMap_IndexBean = {
+    nodePath: string;
+};
+
+export type SiteMap_Index = Record<string, SiteMap_IndexBean>;
+
+export type Data = {
+    pageData: DocumentData;
+    siteData: DocumentData;
 };

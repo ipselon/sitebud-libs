@@ -1,4 +1,4 @@
-export * from './fetchData';
+export * from './fetchRawData';
 // export * from './fetchDocumentData';
 // export * from './fetchDocumentDataById';
 // export * from './fetchDocumentsDataByParentId';

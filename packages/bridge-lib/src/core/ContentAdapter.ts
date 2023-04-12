@@ -11,7 +11,7 @@ import {
     DocumentContentArea,
     Icon,
     StringValue,
-    AnyFieldType, DocumentContentAreaClass
+    AnyFieldType
 } from '@sitebud/domain-lib';
 import {DocumentData, DataFieldValue} from './types';
 import {TagsList} from '@sitebud/domain-lib/src';

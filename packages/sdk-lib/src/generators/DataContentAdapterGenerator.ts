@@ -10,7 +10,8 @@ import {
     AnyFieldType,
     DocumentContentBlockComponentFieldClass,
     DocumentContentDataFieldClass,
-    DocumentContentAreaClass
+    DocumentContentAreaClass,
+    DocumentType
 } from '@sitebud/domain-lib';
 import {formatTS} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
@@ -31,6 +32,7 @@ type TemplateObject = {
     upperFirst: any;
     forOwn: any;
     className: string;
+    documentType: DocumentType;
     dataFields: Array<string>;
     documentAreasNames: Array<string>;
     documentAreaBlocksNames: Record<string, Array<string>>;
@@ -105,6 +107,7 @@ export class DataContentAdapterGenerator {
             libPaths: this._libsPaths,
             upperFirst,
             forOwn,
+            documentType: this._documentClass.type,
             className: this._className,
             dataFields: [],
             documentAreasNames: [],

@@ -1,12 +1,13 @@
-import type {DocumentPathData, DocumentData} from '../core/types';
+import type {DocumentPathData, DocumentData, Data} from '../core/types';
 import {createDocumentPathDataList} from '../core/documentPathDataFactory';
-import {createDocumentData} from '../core/documentDataFactory';
+import {createDocumentData, enhanceDocumentData} from '../core/documentDataFactory';
 import type {SiteMapDataFetchStatus, DocumentDataFetchingStatus} from './types';
 import {fetchSiteMapData} from './fetchSiteMapData';
 import {fetchDocumentData} from './fetchDocumentData';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
+import {SiteMap_Bean} from '@sitebud/domain-lib';
 
 export async function createPaths(): Promise<Array<DocumentPathData>> {
     let paths: Array<DocumentPathData> = [];
@@ -17,15 +18,9 @@ export async function createPaths(): Promise<Array<DocumentPathData>> {
     return paths;
 }
 
-export async function fetchData(locale?: string, slug?: string): Promise<DocumentData> {
-    // take the last section in the path and use it as a slug to find the page data
-    const siteMapDataStatus: SiteMapDataFetchStatus = await fetchSiteMapData();
-    if (!siteMapDataStatus.contextProxy || siteMapDataStatus.isError) {
-        console.error(`Can not read "siteMap.json" file. ${siteMapDataStatus.error}`);
-        throw Error('Not Found');
-    }
+async function fetchData(siteMap: SiteMap_Bean, locale?: string, slug?: string): Promise<DocumentData> {
     const dataFetchStatus: DocumentDataFetchingStatus = await fetchDocumentData(
-        siteMapDataStatus.contextProxy.siteMap, locale, slug
+        siteMap, locale, slug
     );
     if (dataFetchStatus.isNotFound || !dataFetchStatus.contextProxy) {
         throw Error('Not Found');
@@ -36,7 +31,7 @@ export async function fetchData(locale?: string, slug?: string): Promise<Documen
         const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};
         for (const parentId of Object.keys(documentDataListByParentId)) {
             const childrenDocumentDataFetchingStatuses: Array<DocumentDataFetchingStatus> =
-                await fetchDocumentsDataByParentId(siteMapDataStatus.contextProxy.siteMap, parentId, locale);
+                await fetchDocumentsDataByParentId(siteMap, parentId, locale);
             if (childrenDocumentDataFetchingStatuses.length > 0) {
                 newPageDataListByParentIdMap[parentId] = [];
                 for (const childDocumentDataFetchingStatus of childrenDocumentDataFetchingStatuses) {
@@ -53,7 +48,7 @@ export async function fetchData(locale?: string, slug?: string): Promise<Documen
         const newPageDataByIdMap: Record<string, DocumentData> = {};
         for (const documentId of Object.keys(documentDataById)) {
             const documentDataFetchingStatus: DocumentDataFetchingStatus =
-                await fetchDocumentDataById(siteMapDataStatus.contextProxy.siteMap, documentId, locale);
+                await fetchDocumentDataById(siteMap, documentId, locale);
             if (documentDataFetchingStatus.contextProxy && !documentDataFetchingStatus.isError) {
                 newPageDataByIdMap[documentId] = await createDocumentData(documentDataFetchingStatus.contextProxy);
             }
@@ -64,7 +59,7 @@ export async function fetchData(locale?: string, slug?: string): Promise<Documen
         const newPageDataListByTagMap: Record<string, Array<DocumentData>> = {};
         for (const tag of Object.keys(documentDataListByTag)) {
             const taggedDocumentDataFetchingStatuses: Array<DocumentDataFetchingStatus> =
-                await fetchDocumentsDataByTag(siteMapDataStatus.contextProxy.siteMap, tag, locale);
+                await fetchDocumentsDataByTag(siteMap, tag, locale);
             if (taggedDocumentDataFetchingStatuses.length > 0) {
                 newPageDataListByTagMap[tag] = [];
                 for (const taggedDocumentDataFetchingStatus of taggedDocumentDataFetchingStatuses) {
@@ -77,5 +72,19 @@ export async function fetchData(locale?: string, slug?: string): Promise<Documen
         }
         documentData.documentDataListByTag = newPageDataListByTagMap;
     }
-    return documentData;
+    return enhanceDocumentData(documentData, siteMap, locale);
+}
+
+export async function fetchRawData(locale?: string, slug?: string): Promise<Data> {
+    const siteMapDataStatus: SiteMapDataFetchStatus = await fetchSiteMapData();
+    if (!siteMapDataStatus.contextProxy || siteMapDataStatus.isError) {
+        console.error(`Can not read "siteMap.json" file. ${siteMapDataStatus.error}`);
+        throw Error('Not Found');
+    }
+    const pageData: DocumentData = await fetchData(siteMapDataStatus.contextProxy.siteMap, locale, slug);
+    const siteData: DocumentData = await fetchData(siteMapDataStatus.contextProxy.siteMap, locale, '@site');
+    return {
+        pageData,
+        siteData
+    }
 }
