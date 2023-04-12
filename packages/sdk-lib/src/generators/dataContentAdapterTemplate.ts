@@ -30,35 +30,37 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             result.dataFields = this.processDataFields(content.dataFields);
         }
         <% } %>
+        
         <% if (documentAreasNames && documentAreasNames.length > 0) {%>
         if (content?.documentAreas && content.documentAreas.length > 0) {
             result.documentAreas = this.processAreas(content.documentAreas, {
-                <% documentAreasNames.forEach(function(areaName) {%>
+                <% forOwn(documentAreas, function(areaObject, areaName) { %>
                 '<%= areaName %>': {
-                    <% documentAreaBlocksNames[areaName].forEach(function(blockName) { %>
+                    <% forOwn(areaObject, function(blockComponents, blockName) { %>
                             '<%= blockName %>': {                   
-                            <% blockComponents[blockName].forEach(function(component) { %>
-                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
+                            <% blockComponents.forEach(function(component) { %>
+                                <%= component.name %>: [<% component.componentProps.forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
                             <% }); %>
                             },
-                        <% }); %>
+                    <% }); %>
                     },
                 <% }); %>
             }) as <%= upperFirst(className) %>_DocumentAreas;
         }
         <% } %>
+        
         <% if (commonAreasNames && commonAreasNames.length > 0) {%>
         if (content?.commonAreas && content.commonAreas.length > 0) {
             result.commonAreas = this.processAreas(content.commonAreas, {
-                <% commonAreasNames.forEach(function(areaName) {%>
+                <% forOwn(commonAreas, function(areaObject, areaName) { %>
                 '<%= areaName %>': {
-                    <% commonAreaBlocksNames[areaName].forEach(function(blockName) { %>
+                    <% forOwn(areaObject, function(blockComponents, blockName) { %>
                             '<%= blockName %>': {                   
-                            <% blockComponents[blockName].forEach(function(component) { %>
-                                <%= component.name %>: [<% componentProps[component.name].forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
+                            <% blockComponents.forEach(function(component) { %>
+                                <%= component.name %>: [<% component.componentProps.forEach(function(prop) { %>{name:'<%= prop.name %>', type: '<%= prop.type %>'},<% }); %>],
                             <% }); %>
                             },
-                        <% }); %>
+                    <% }); %>
                     },
                 <% }); %>
             }) as <%= upperFirst(className) %>_CommonAreas;

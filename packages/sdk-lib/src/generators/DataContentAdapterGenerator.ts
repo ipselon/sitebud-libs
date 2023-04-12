@@ -17,14 +17,17 @@ import {formatTS} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
 import {dataContentAdapterTemplate} from './dataContentAdapterTemplate';
 
-type TemplateComponentObject = { name: string; isArray?: boolean };
 type TemplatePropObject = { name: string; type: AnyFieldType };
+type TemplateComponentObject = {
+    name: string;
+    isArray?: boolean
+    componentProps: Array<TemplatePropObject>;
+};
+type TemplateAreaObject = Record<string, Array<TemplateComponentObject>>;
 
 type AreasTemplateObject = {
     areasNames: Array<string>;
-    areaBlocksNames: Record<string, Array<string>>;
-    areaBlockComponents: Record<string, Array<TemplateComponentObject>>;
-    areaComponentProps: Record<string, Array<TemplatePropObject>>;
+    areas: Record<string, TemplateAreaObject>;
 };
 
 type TemplateObject = {
@@ -35,11 +38,9 @@ type TemplateObject = {
     documentType: DocumentType;
     dataFields: Array<string>;
     documentAreasNames: Array<string>;
-    documentAreaBlocksNames: Record<string, Array<string>>;
+    documentAreas: Record<string, TemplateAreaObject>;
     commonAreasNames: Array<string>;
-    commonAreaBlocksNames: Record<string, Array<string>>;
-    blockComponents: Record<string, Array<TemplateComponentObject>>;
-    componentProps: Record<string, Array<TemplatePropObject>>;
+    commonAreas: Record<string, TemplateAreaObject>;
 };
 
 type LibName = 'bridgeLib' | 'domainLib';
@@ -67,23 +68,16 @@ export class DataContentAdapterGenerator {
     ): AreasTemplateObject {
         const result: AreasTemplateObject = {
             areasNames: [],
-            areaBlocksNames: {},
-            areaBlockComponents: {},
-            areaComponentProps: {}
+            areas: {},
         };
         let documentAreaClassTuples: Array<[string, DocumentContentAreaClass]> = Object.entries(areas);
         for (const documentAreaClassTuple of documentAreaClassTuples) {
             const blockClassTuples: Array<[string, DocumentContentBlockClass]> = Object.entries(documentAreaClassTuple[1].blocks);
-            const areaBlocksNames: Array<string> = [];
+            const area: TemplateAreaObject = {};
             for (const blockClassTuple of blockClassTuples) {
-                areaBlocksNames.push(blockClassTuple[0]);
                 const componentClassTuples: Array<[string, DocumentContentBlockComponentClass]> = Object.entries(blockClassTuple[1].components);
                 const blockComponents: Array<TemplateComponentObject> = [];
                 for (const componentClassTuple of componentClassTuples) {
-                    blockComponents.push({
-                        name: componentClassTuple[0],
-                        isArray: componentClassTuple[1].isArray
-                    });
                     const fieldClassTuples: Array<[string, DocumentContentBlockComponentFieldClass]> = Object.entries(componentClassTuple[1].props);
                     const componentProps: Array<TemplatePropObject> = [];
                     for (const fieldClassTuple of fieldClassTuples) {
@@ -92,11 +86,15 @@ export class DataContentAdapterGenerator {
                             type: fieldClassTuple[1].type
                         });
                     }
-                    result.areaComponentProps[componentClassTuple[0]] = componentProps;
+                    blockComponents.push({
+                        name: componentClassTuple[0],
+                        isArray: componentClassTuple[1].isArray,
+                        componentProps
+                    });
                 }
-                result.areaBlockComponents[blockClassTuple[0]] = blockComponents;
+                area[blockClassTuple[0]] = blockComponents;
             }
-            result.areaBlocksNames[documentAreaClassTuple[0]] = areaBlocksNames;
+            result.areas[documentAreaClassTuple[0]] = area;
             result.areasNames.push(documentAreaClassTuple[0]);
         }
         return result;
@@ -111,11 +109,9 @@ export class DataContentAdapterGenerator {
             className: this._className,
             dataFields: [],
             documentAreasNames: [],
-            documentAreaBlocksNames: {},
+            documentAreas: {},
             commonAreasNames: [],
-            commonAreaBlocksNames: {},
-            blockComponents: {},
-            componentProps: {}
+            commonAreas: {}
         };
         let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(this._documentClass.dataFields);
         dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
@@ -126,18 +122,13 @@ export class DataContentAdapterGenerator {
         }
         const documentAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.documentAreas);
         result.documentAreasNames = documentAreasTemplateObject.areasNames;
-        result.documentAreaBlocksNames = documentAreasTemplateObject.areaBlocksNames;
-        result.blockComponents = documentAreasTemplateObject.areaBlockComponents;
-        result.componentProps = documentAreasTemplateObject.areaComponentProps;
+        result.documentAreas = documentAreasTemplateObject.areas;
 
         if (this._documentClass.commonAreas) {
             const commonAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.commonAreas);
             result.commonAreasNames = commonAreasTemplateObject.areasNames;
-            result.commonAreaBlocksNames = commonAreasTemplateObject.areaBlocksNames;
-            result.blockComponents = {...result.blockComponents, ...commonAreasTemplateObject.areaBlockComponents};
-            result.componentProps = {...result.componentProps, ...commonAreasTemplateObject.areaComponentProps};
+            result.commonAreas = commonAreasTemplateObject.areas;
         }
-
         return result;
     }
 
