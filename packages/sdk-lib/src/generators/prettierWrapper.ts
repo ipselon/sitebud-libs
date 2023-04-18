@@ -6,7 +6,7 @@ export function formatTS (
     text,
     options = {
         singleQuote: true,
-        printWidth: 60,
+        printWidth: 80,
         tabWidth: 4
     }
 ) {
@@ -15,4 +15,17 @@ export function formatTS (
         plugins: [parserTypeScript],
         ...options
     });
+}
+
+export function removeEmptyLines(text: string): string {
+    // Split the text into an array of lines
+    const lines = text.split(/\r?\n/);
+
+    // Filter out empty lines (remove lines containing only whitespace characters)
+    const nonEmptyLines = lines.filter(line => line.trim() !== '');
+
+    // Join the non-empty lines back together
+    const newText = nonEmptyLines.join('\n');
+
+    return newText;
 }

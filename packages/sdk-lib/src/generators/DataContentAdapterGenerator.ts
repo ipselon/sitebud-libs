@@ -13,7 +13,7 @@ import {
     DocumentContentAreaClass,
     DocumentType
 } from '@sitebud/domain-lib';
-import {formatTS} from './prettierWrapper';
+import {formatTS, removeEmptyLines} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
 import {dataContentAdapterTemplate} from './dataContentAdapterTemplate';
 
@@ -138,7 +138,7 @@ export class DataContentAdapterGenerator {
             outputFilePath = path.join(this._outputDirPath, fileName);
             const typeFileBody: string = template(templateText)(this.createTemplateObject());
             await fs.ensureFile(outputFilePath);
-            await fs.writeFile(outputFilePath, formatTS(typeFileBody));
+            await fs.writeFile(outputFilePath, removeEmptyLines(formatTS(typeFileBody)));
         } catch (e: any) {
             throw Error(`Error while generating '${outputFilePath}' file. Error: ${e.message}`);
         }

@@ -69,8 +69,8 @@ export abstract class ContentAdapter<T> {
                     case 'DocumentsList':
                         if (this._adaptDocumentDataCb) {
                             const {documentsIds, selectionMode} = (fieldContent as DocumentsList);
+                            const pageContentContextList: Array<any> = [];
                             if (documentsIds && documentsIds.length > 0) {
-                                const pageContentContextList: Array<any> = [];
                                 if (selectionMode === 'selectChildrenDocuments') {
                                     for(const parentDocumentId of documentsIds) {
                                         if (parentDocumentId && this._documentData.documentDataListByParentId) {
@@ -85,7 +85,7 @@ export abstract class ContentAdapter<T> {
                                             }
                                         }
                                     }
-                                } else if (selectionMode === 'selectDocuments') {
+                                } else {
                                     for(const documentId of documentsIds) {
                                         if (documentId && this._documentData.documentDataById) {
                                             const pageData: DocumentData | null = this._documentData.documentDataById[documentId];
@@ -98,15 +98,15 @@ export abstract class ContentAdapter<T> {
                                         }
                                     }
                                 }
-                                result[name] = pageContentContextList;
                             }
+                            result[name] = pageContentContextList;
                         }
                         break;
                     case 'TagsList':
                         if (this._adaptDocumentDataCb) {
+                            const pageContentContextList: Array<any> = [];
                             const {tags} = (fieldContent as TagsList);
                             if (tags && tags.length > 0) {
-                                const pageContentContextList: Array<any> = [];
                                 for(const tag of tags) {
                                     if (tag && this._documentData.documentDataListByTag) {
                                         const pageDataList: Array<DocumentData> | null = this._documentData.documentDataListByTag[tag];
@@ -120,8 +120,8 @@ export abstract class ContentAdapter<T> {
                                         }
                                     }
                                 }
-                                result[name] = pageContentContextList;
                             }
+                            result[name] = pageContentContextList;
                         }
                         break;
                     default:
@@ -221,6 +221,9 @@ export abstract class ContentAdapter<T> {
 
     protected processAreas(areas: Array<DocumentContentArea>, areasSpec: AreasSpecification): Record<string, any> {
         const result: Record<string, any> = {};
+        for (const [areaSpecName] of Object.entries(areasSpec)) {
+            result[areaSpecName] = {};
+        }
         for (const area of areas) {
             const foundBlocksSpec = areasSpec[area.name];
             if (foundBlocksSpec && area.blocks && area.blocks.length > 0) {

@@ -1,33 +1,18 @@
 import path from 'path';
 import {DocumentClass, DocumentClass_Index} from '@sitebud/domain-lib';
-import {generateJsonFile, readObjectFromFile, deleteDir} from './utilities';
+import {generateJsonFile, deleteDir} from './utilities';
 import {DataContentAdapterGenerator} from './DataContentAdapterGenerator';
 import {AdaptersCommonsGenerator} from './AdaptersCommonsGenerator';
 
-
 export class FilesGenerator {
-    private _dataDirPath: string;
+    private _configDirPath: string;
     private _adaptersDirPath: string;
     private _documentClasses: DocumentClass_Index;
 
     constructor() {
-        this._dataDirPath = path.join(process.cwd(), '.sitebud');
+        this._configDirPath = path.join(process.cwd(), 'data-config');
         this._adaptersDirPath = path.join(process.cwd(), 'src', 'adapters');
         this._documentClasses = {};
-    }
-
-    private async _generateKeyValuesIndex(keyValuesIndex: any, outputFilePath: string): Promise<void> {
-        let prevObject: any;
-        try {
-            prevObject = await readObjectFromFile(outputFilePath);
-        } catch (e) {
-        }
-        if (prevObject) {
-            prevObject = {...keyValuesIndex, ...prevObject};
-        } else {
-            prevObject = keyValuesIndex;
-        }
-        return generateJsonFile(prevObject, outputFilePath);
     }
 
     withAdaptersDir(dirPath: string): FilesGenerator {
@@ -53,6 +38,6 @@ export class FilesGenerator {
             classNames.push(documentClassTuple[0]);
         }
         await new AdaptersCommonsGenerator(classNames, this._adaptersDirPath).generate();
-        await generateJsonFile(this._documentClasses, path.join(this._dataDirPath, 'documentClassIndex.json'));
+        await generateJsonFile(this._documentClasses, path.join(this._configDirPath, 'documentClassIndex.json'));
     };
 }

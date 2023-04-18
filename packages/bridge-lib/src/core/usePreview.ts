@@ -17,7 +17,7 @@ export const usePreview = (isPreview: boolean, locale?: string, slug?: string): 
         siteDataPreview: {}
     });
     useEffect(() => {
-        if (isPreview && previewState.status === 'uninitialized') {
+        if (isPreview) {
             const previewBus: PreviewBus = getPreviewBusInstance();
             if (!previewBus.timeoutId) {
                 previewBus.initPreviewConfig((error?: string) => {
@@ -65,7 +65,7 @@ export const usePreview = (isPreview: boolean, locale?: string, slug?: string): 
                 });
             }
         }
-    }, [isPreview, locale, previewState]);
+    }, [isPreview, locale, slug]);
 
     return previewState;
 }

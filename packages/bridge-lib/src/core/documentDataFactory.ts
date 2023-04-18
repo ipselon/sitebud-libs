@@ -92,7 +92,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
                                                     newDocumentData.documentDataListByParentId = newDocumentData.documentDataListByParentId || {};
                                                     newDocumentData.documentDataListByParentId[parentDocumentId] = null;
                                                 }
-                                            } else if (selectionMode === 'selectDocuments') {
+                                            } else {
                                                 for (const documentId of documentsIds) {
                                                     newDocumentData.documentDataById = newDocumentData.documentDataById || {};
                                                     newDocumentData.documentDataById[documentId] = null;
