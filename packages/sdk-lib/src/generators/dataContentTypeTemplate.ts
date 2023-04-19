@@ -9,9 +9,9 @@ import {DocumentContentContext,<% if (dataFields && dataFields.length > 0) { %> 
 
 <% forOwn(areaObject, function(blockComponents, blockName) { %>
 /**
- * From <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %> Document Area
+ * From <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>
  */
-export type <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
+export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
     <% blockComponents.forEach(function(componentObject) { %>
         <% if (componentObject.isArray) { %>
             <%= componentObject.name %>: Array<{<% printProps(componentObject.name, componentObject.componentProps) %>}>;
@@ -25,9 +25,9 @@ export type <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %>_<%=
 /**
  * From Document Areas
  */
-export type <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %> = Array<{
+export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %> = Array<{
     <% forOwn(areaObject, function(blockComponents, blockName) { %>
-        <%= blockName %>?: <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
+        <%= blockName %>?: <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
     <% }); %>
 }>;
 
@@ -38,7 +38,7 @@ export type <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %> = A
  */
 export type <%= upperFirst(className) %>_DocumentAreas = {
 <% forOwn(documentAreas, function(areaObject, areaName) { %>
-    <%= areaName %>: <%= upperFirst(className) %>_Document<%= upperFirst(areaName) %>;
+    <%= areaName %>: <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>;
 <% }); %>
 };
 
@@ -49,9 +49,9 @@ export type <%= upperFirst(className) %>_DocumentAreas = {
 
 <% forOwn(areaObject, function(blockComponents, blockName) { %>
 /**
- * From <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %> Common Area
+ * From <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>
  */
-export type <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
+export type <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
     <% blockComponents.forEach(function(componentObject){ %>
         <% if (componentObject.isArray) { %>
             <%= componentObject.name %>: Array<{<% printProps(componentObject.name, componentObject.componentProps) %>}>;
@@ -65,9 +65,9 @@ export type <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %>_<%= u
 /**
  * From Common Areas
  */
-export type <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %> = Array<{
+export type <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %> = Array<{
     <% forOwn(areaObject, function(blockComponents, blockName) { %>
-        <%= blockName %>?: <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
+        <%= blockName %>?: <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
     <% }); %>
 }>;
 <% }); %>
@@ -77,7 +77,7 @@ export type <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %> = Arr
  */
 export type <%= upperFirst(className) %>_CommonAreas = {
 <% forOwn(commonAreas, function(areaObject, areaName) { %>
-    <%= areaName %>: <%= upperFirst(className) %>_Common<%= upperFirst(areaName) %>;
+    <%= areaName %>: <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>;
 <% }); %>
 };
 

@@ -4,7 +4,6 @@ export * from './<%= upperFirst(className) %>ContentAdapter';
 import {<%= upperFirst(className) %>Content} from './<%= upperFirst(className) %>Content';
 <% }); %>
 export type DataFieldType = 'string' | 'number';
-export type GeneralSettings = { title: string; };
 export type DocumentContentContext = {
 <% classNames.forEach(function(className) {%>
     <%= lowerFirst(className) %>Content?: <%= upperFirst(className) %>Content;
