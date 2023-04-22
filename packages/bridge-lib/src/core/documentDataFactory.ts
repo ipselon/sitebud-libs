@@ -145,6 +145,7 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
 export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): DocumentData {
     const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, {}, siteMap.defaultLocale, locale);
     if (documentData.id) {
+        console.log('[enhanceDocumentData] error nodePath: ', documentData, siteIndex[documentData.id]);
         documentData.path = siteIndex[documentData.id].nodePath;
     }
     const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
@@ -184,7 +185,9 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
             const localeTagsLinks: Record<string, string> | undefined = siteMap.tagsLinks[validLocale];
             if (localeTagsLinks) {
                 for (const tagLink of Object.entries(localeTagsLinks)) {
-                    documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
+                    if (siteIndex[tagLink[1]]) {
+                        documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
+                    }
                 }
             }
         }
