@@ -2,8 +2,8 @@ import {
     DocumentRecord_Bean,
     SiteMap_Bean,
 } from '@sitebud/domain-lib';
+import {DocumentData} from '../core';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
-import {DocumentDataFetchingStatus} from './types';
 
 function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: string): DocumentRecord_Bean | undefined {
     const foundContent = root.contents[locale];
@@ -24,29 +24,18 @@ function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: s
     }
 }
 
-export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, documentSlug?: string): Promise<DocumentDataFetchingStatus> {
-    let result: DocumentDataFetchingStatus = {};
-    try {
-        let foundDocument: DocumentRecord_Bean | undefined;
-        if (documentSlug) {
-            foundDocument = findDocument(siteMap.root, documentSlug, locale || siteMap.defaultLocale);
-            if (!foundDocument) {
-                foundDocument = findDocument(siteMap.root, documentSlug, siteMap.defaultLocale);
-            }
-        } else {
-            foundDocument = siteMap.root.children.find(i => i.type === 'main_page');
-        }
+export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, documentSlug?: string): Promise<DocumentData> {
+    let foundDocument: DocumentRecord_Bean | undefined;
+    if (documentSlug) {
+        foundDocument = findDocument(siteMap.root, documentSlug, locale || siteMap.defaultLocale);
         if (!foundDocument) {
-            result.isNotFound = true;
-        } else {
-            return fetchDocumentDataById(siteMap, foundDocument.id, locale);
+            foundDocument = findDocument(siteMap.root, documentSlug, siteMap.defaultLocale);
         }
-    } catch (e: any) {
-        result = {
-            error: e.message,
-            isError: true,
-            isNotFound: true
-        }
+    } else {
+        foundDocument = siteMap.root.children.find(i => i.type === 'main_page');
     }
-    return result;
+    if (!foundDocument) {
+        throw Error('Document is not found');
+    }
+    return await fetchDocumentDataById(siteMap, foundDocument.id, locale);
 }

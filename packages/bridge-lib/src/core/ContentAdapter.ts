@@ -32,7 +32,7 @@ export abstract class ContentAdapter<T> {
         this._adaptDocumentDataCb = adaptDocumentDataCb;
     }
 
-    protected processProps(props: Array<DocumentContentBlockComponentField>, propsSpec: PropsSpecification): Record<string, any> {
+    private processProps(props: Array<DocumentContentBlockComponentField>, propsSpec: PropsSpecification): Record<string, any> {
         const result: Record<string, any> = {};
         const fulfilledProps: Array<string> = [];
         for (const propsItem of props) {
@@ -171,7 +171,7 @@ export abstract class ContentAdapter<T> {
         return result;
     }
 
-    protected processComponents(
+    private processComponents(
         components: Array<DocumentContentBlockComponent>,
         componentsSpec: ComponentsSpecification
     ): Record<string, any> {
@@ -192,7 +192,11 @@ export abstract class ContentAdapter<T> {
                         result[componentsItem.name] = this.processProps(componentsItem.instances[0].props, foundPropsSpec);
                     }
                 } else {
-                    result[componentsItem.name] = {};
+                    if (componentsItem.isArray) {
+                        result[componentsItem.name] = [];
+                    } else {
+                        result[componentsItem.name] = {};
+                    }
                 }
             } else {
                 console.error(`[SiteBud ContentAdapter] the "${componentsItem.name}" component in the document data does not exist in the "${this._documentData.name}" document data schema.`);
@@ -206,7 +210,7 @@ export abstract class ContentAdapter<T> {
         return result;
     }
 
-    protected processBlocks(blocks: Array<DocumentContentBlock>, blocksSpec: BlocksSpecification): Array<Record<string, any>> {
+    private processBlocks(blocks: Array<DocumentContentBlock>, blocksSpec: BlocksSpecification): Array<Record<string, any>> {
         const result: Array<Record<string, any>> = [];
         for (const blocksItem of blocks) {
             const foundComponentsSpec = blocksSpec[blocksItem.name];
@@ -219,29 +223,55 @@ export abstract class ContentAdapter<T> {
         return result;
     }
 
-    protected processAreas(areas: Array<DocumentContentArea>, areasSpec: AreasSpecification): Record<string, any> {
+    private processAreas(areas: Array<DocumentContentArea>, areasSpec: AreasSpecification): Record<string, any> {
         const result: Record<string, any> = {};
         for (const [areaSpecName] of Object.entries(areasSpec)) {
-            result[areaSpecName] = {};
+            result[areaSpecName] = [];
         }
         for (const area of areas) {
             const foundBlocksSpec = areasSpec[area.name];
             if (foundBlocksSpec && area.blocks && area.blocks.length > 0) {
                 result[area.name] = this.processBlocks(area.blocks, foundBlocksSpec);
             } else {
-                result[area.name] = {};
+                result[area.name] = [];
             }
         }
         return result;
     }
 
-    protected processDataFields(dataFields: Array<DocumentContentDataField>): Record<string, DataFieldValue> {
+    protected processCommonAreas(areasSpec: AreasSpecification): Record<string, any> {
+        if (this._documentData.content?.commonAreas && this._documentData.content.commonAreas.length > 0) {
+            return this.processAreas(this._documentData.content.commonAreas, areasSpec);
+        }
+        return {};
+    }
+
+    protected processDocumentAreas(areasSpec: AreasSpecification): Record<string, any> {
+        if (this._documentData.content?.documentAreas && this._documentData.content.documentAreas.length > 0) {
+            return this.processAreas(this._documentData.content.documentAreas, areasSpec);
+        }
+        return {};
+    }
+
+    protected processDataFields(): Record<string, DataFieldValue> {
         const result: Record<string, DataFieldValue> = {};
-        for (const dataField of dataFields) {
-            result[dataField.name] = {
-                value: dataField.value,
-                type: dataField.type
-            };
+        if (this._documentData.content?.dataFields && this._documentData.content?.dataFields.length > 0) {
+            for (const dataField of this._documentData.content.dataFields) {
+                result[dataField.name] = {
+                    value: dataField.value,
+                    type: dataField.type
+                };
+            }
+        }
+        return result;
+    }
+
+    protected processAuthorsProfiles(): Record<string, any> {
+        const result: Record<string, any> = {};
+        if (this._documentData.authorProfiles && this._adaptDocumentDataCb) {
+            for (const documentDataEntry of Object.entries(this._documentData.authorProfiles)) {
+                result[documentDataEntry[0]] = this._adaptDocumentDataCb(documentDataEntry[1]);
+            }
         }
         return result;
     }

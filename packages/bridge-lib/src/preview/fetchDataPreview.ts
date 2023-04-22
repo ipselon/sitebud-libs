@@ -170,6 +170,7 @@ async function fetchDocumentDataById(
             locale,
             siteMap,
             documentId: document.id,
+            documentType: document.type,
             documentContent
         });
     }
@@ -312,6 +313,19 @@ export async function fetchImageData(previewConfig: PreviewConfig, filePath: str
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
 
+export async function fetchExtraData(documentData: DocumentData, previewConfig: PreviewConfig, siteMap: SiteMap_Bean, locale: string): Promise<DocumentData> {
+    documentData.authorProfiles = {};
+    if (siteMap.authorsDocumentIds) {
+        const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
+        if (localeAuthorDocumentIds) {
+            for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
+                documentData.authorProfiles[authorDocumentId[0]] = await fetchDocumentDataById(previewConfig, siteMap, authorDocumentId[1], locale);
+            }
+        }
+    }
+    return documentData;
+}
+
 export async function fetchDataPreview(changesData: any, previewConfig: PreviewConfig, locale: string, slug?: string): Promise<Data> {
     setChangesBulk(changesData);
     setImageResolver(async (imgSrc?: string | null) => {
@@ -322,7 +336,8 @@ export async function fetchDataPreview(changesData: any, previewConfig: PreviewC
     });
     const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
     const pageData: DocumentData = await fetchDocumentData(previewConfig, siteMap, locale, slug);
-    const siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, locale, '@site');
+    let siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, locale, '@site');
+    siteData = await fetchExtraData(siteData, previewConfig, siteMap, locale);
     return {
         pageData,
         siteData

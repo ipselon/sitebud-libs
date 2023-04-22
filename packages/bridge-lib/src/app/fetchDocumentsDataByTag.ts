@@ -1,15 +1,14 @@
 import {
     SiteMap_Bean,
     DocumentRecord_Bean,
-    findDocument,
     getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
+import {DocumentData} from '../core';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
-import {DocumentDataFetchingStatus} from './types';
 
-export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string, locale?: string): Promise<Array<DocumentDataFetchingStatus>> {
-    const resultList: Array<DocumentDataFetchingStatus> = [];
+export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string, locale?: string): Promise<Array<DocumentData>> {
+    const resultList: Array<DocumentData> = [];
     if (locale) {
         const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
             const foundDocumentContent: DocumentContent_Base | undefined = documentRecord.contents[locale];

@@ -121,7 +121,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
 export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
     const newDocumentData: DocumentData = {};
     if (documentContext) {
-        const {documentClass, documentContent, siteMap, locale, documentId} = documentContext;
+        const {documentClass, documentContent, siteMap, locale, documentId, documentType} = documentContext;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
                 await processBlocks(documentArea.blocks, newDocumentData);
@@ -133,10 +133,10 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
             }
         }
         newDocumentData.id = documentId;
-        newDocumentData.generalSettings = siteMap.generalSettings;
         newDocumentData.content = documentContent;
         newDocumentData.locale = locale;
         newDocumentData.name = documentClass;
+        newDocumentData.type = documentType;
     }
 
     return newDocumentData;
@@ -178,12 +178,14 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
         }
     }
     documentData.tagsLinks = {};
-    if (siteMap.tagsLinks) {
+    if (documentData.type === 'site') {
         const validLocale: string = locale || siteMap.defaultLocale;
-        const localeTagsLinks: Record<string, string> | undefined = siteMap.tagsLinks[validLocale];
-        if (localeTagsLinks) {
-            for (const tagLink of Object.entries(localeTagsLinks)) {
-                documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
+        if (siteMap.tagsLinks) {
+            const localeTagsLinks: Record<string, string> | undefined = siteMap.tagsLinks[validLocale];
+            if (localeTagsLinks) {
+                for (const tagLink of Object.entries(localeTagsLinks)) {
+                    documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
+                }
             }
         }
     }

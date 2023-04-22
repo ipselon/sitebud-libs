@@ -16,6 +16,7 @@ import {
 import {formatTS, removeEmptyLines} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
 import {dataContentAdapterTemplate} from './dataContentAdapterTemplate';
+import {dataContentAdapterProviderTemplate} from './dataContentAdapterProviderTemplate';
 
 type TemplatePropObject = { name: string; type: AnyFieldType };
 type TemplateComponentObject = {
@@ -152,5 +153,6 @@ export class DataContentAdapterGenerator {
     async generate(): Promise<void> {
         await this.generateFile(`${upperFirst(this._className)}Content.ts`, dataContentTypeTemplate);
         await this.generateFile(`${upperFirst(this._className)}ContentAdapter.ts`, dataContentAdapterTemplate);
+        await this.generateFile(`ContentAdapterProvider.tsx`, dataContentAdapterProviderTemplate);
     }
 }

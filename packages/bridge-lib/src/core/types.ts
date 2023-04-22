@@ -10,7 +10,7 @@ import type {
     SiteMap_Bean,
     DocumentContentDataFieldType,
     DocumentsList,
-    SiteGeneralSettings
+    DocumentType
 } from '@sitebud/domain-lib';
 
 export type {
@@ -34,14 +34,15 @@ export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statu
 export type DocumentData = {
     id?: string;
     name?: string;
+    type?: DocumentType;
     content?: DocumentContent;
     path?: string;
     locale?: string;
     tagsLinks?: Record<string, string>;
-    generalSettings?: SiteGeneralSettings;
     documentDataListByTag?: Record<string, Array<DocumentData> | null>;
     documentDataListByParentId?: Record<string, Array<DocumentData> | null>;
     documentDataById?: Record<string, DocumentData | null>;
+    authorProfiles?: Record<string, DocumentData>;
 };
 
 export type DocumentPathParams = {
@@ -58,6 +59,7 @@ export type DocumentContext = {
     siteMap: SiteMap_Bean;
     documentClass: string;
     documentId: string;
+    documentType: DocumentType;
     documentContent: DocumentContent_Bean;
 };
 

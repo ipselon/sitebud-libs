@@ -3,11 +3,11 @@ import {
     DocumentRecord_Bean,
     findDocument
 } from '@sitebud/domain-lib';
-import {DocumentDataFetchingStatus} from './types';
+import {DocumentData} from '../core';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 
-export async function fetchDocumentsDataByParentId(siteMap: SiteMap_Bean, parentDocumentId: string, locale?: string): Promise<Array<DocumentDataFetchingStatus>> {
-    const resultList: Array<DocumentDataFetchingStatus> = [];
+export async function fetchDocumentsDataByParentId(siteMap: SiteMap_Bean, parentDocumentId: string, locale?: string): Promise<Array<DocumentData>> {
+    const resultList: Array<DocumentData> = [];
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
         for (const documentItem of foundParentDocumentRecord.children) {

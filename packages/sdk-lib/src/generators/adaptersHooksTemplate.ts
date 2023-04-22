@@ -1,10 +1,10 @@
 export const adaptersHooksTemplate: string = `
+import {useContext} from 'react';
 import {Data, DocumentData} from '<%= libPaths.bridgeLib %>';
-import { 
-    DocumentContentContext, 
-<% classNames.forEach(function(className) {%><%= upperFirst(className) %>ContentAdapter,
+import {DocumentContentContextInstance} from './ContentAdapterProvider';
+<% classNames.forEach(function(className) {%>import {<%= upperFirst(className) %>ContentAdapter} from './<%= upperFirst(className) %>ContentAdapter';
 <% }); %>
-} from './types';
+import type {DocumentContentContext} from './types';
 
 function adaptDocumentData(documentData: DocumentData): DocumentContentContext {
     const documentContentContext: DocumentContentContext = {};
@@ -29,5 +29,21 @@ function adaptData(data: Data): DocumentContentContext {
 
 export function useDocumentDataAdapter(data: Data): DocumentContentContext {
     return adaptData(data);
+}
+
+export function useAdaptedContent(): DocumentContentContext {
+    return useContext(DocumentContentContextInstance);
+}
+
+export function useLastAuthor(authors?: Record<string, number>): string | undefined {
+    let authorEmail: string | undefined;
+    if (authors) {
+        let authorEntries: Array<[string, number]> = Object.entries(authors);
+        if (authorEntries.length > 0) {
+            authorEntries = authorEntries.sort((a, b) => b[1] - a[1]);
+            authorEmail = authorEntries[0][0];
+        }
+    }
+    return authorEmail;
 }
 `;
