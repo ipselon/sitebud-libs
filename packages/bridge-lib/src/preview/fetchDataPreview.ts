@@ -319,7 +319,8 @@ export async function fetchExtraData(documentData: DocumentData, previewConfig: 
         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
         if (localeAuthorDocumentIds) {
             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-                documentData.authorProfiles[authorDocumentId[0]] = await fetchDocumentDataById(previewConfig, siteMap, authorDocumentId[1], locale);
+                const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(previewConfig, siteMap, authorDocumentId[1], locale);
+                documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorProfileDocumentData, siteMap, locale);
             }
         }
     }

@@ -15,7 +15,8 @@ async function fetchExtraData(documentData: DocumentData, siteMap: SiteMap_Bean,
         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[validLocale];
         if (localeAuthorDocumentIds) {
             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-                documentData.authorProfiles[authorDocumentId[0]] = await fetchDocumentDataById(siteMap, authorDocumentId[1], locale);
+                const authorDocumentData: DocumentData = await fetchDocumentDataById(siteMap, authorDocumentId[1], locale);
+                documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorDocumentData, siteMap, locale);
             }
         }
     }

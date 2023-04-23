@@ -121,7 +121,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
 export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
     const newDocumentData: DocumentData = {};
     if (documentContext) {
-        const {documentClass, documentContent, siteMap, locale, documentId, documentType} = documentContext;
+        const {documentClass, documentContent, locale, documentId, documentType} = documentContext;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
                 await processBlocks(documentArea.blocks, newDocumentData);
@@ -145,7 +145,6 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
 export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): DocumentData {
     const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, {}, siteMap.defaultLocale, locale);
     if (documentData.id) {
-        console.log('[enhanceDocumentData] error nodePath: ', documentData, siteIndex[documentData.id]);
         documentData.path = siteIndex[documentData.id].nodePath;
     }
     const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;

@@ -8,6 +8,8 @@ export async function readDataFromFile<T>(filePath: string): Promise<T> {
         throw Error('Missing path external module');
     }
     const cacheFilePath = path.join(process.cwd(), filePath);
-    await fsExtra.ensureFile(cacheFilePath);
-    return await fsExtra.readJson(cacheFilePath) as Promise<T>;
+    if (fsExtra.existsSync(cacheFilePath)) {
+        return await fsExtra.readJson(cacheFilePath) as Promise<T>;
+    }
+    throw Error(`${filePath} does not exist`);
 }
