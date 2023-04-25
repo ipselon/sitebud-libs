@@ -52,6 +52,7 @@ export type DocumentContent_Base = {
     title: string;
     slug: string;
     tags: Record<string, number>;
+    includeInSiteMap?: boolean;
     dateUpdated?: number;
     isCustomSlug?: boolean;
     authors?: Record<string, number>;

@@ -2,7 +2,7 @@ export const adaptersHooksTemplate: string = `
 import {useContext} from 'react';
 import {Data, DocumentData} from '<%= libPaths.bridgeLib %>';
 import {DocumentContentContextInstance} from './ContentAdapterProvider';
-<% classNames.forEach(function(className) {%>import {<%= upperFirst(className) %>ContentAdapter} from './<%= upperFirst(className) %>ContentAdapter';
+<% classes.forEach(function(classItem) {%>import {<%= upperFirst(classItem.className) %>ContentAdapter} from './<%= upperFirst(classItem.className) %>ContentAdapter';
 <% }); %>
 import type {DocumentContentContext} from './types';
 
@@ -10,9 +10,9 @@ function adaptDocumentData(documentData: DocumentData): DocumentContentContext {
     const documentContentContext: DocumentContentContext = {};
     if (documentData && documentData.content && documentData.name) {
         switch (documentData.name) {
-        <% classNames.forEach(function(className) {%>
-            case '<%= upperFirst(className) %>':
-                documentContentContext.<%= lowerFirst(className) %>Content = new <%= upperFirst(className) %>ContentAdapter(documentData, adaptDocumentData).adapt(); 
+        <% classes.forEach(function(classItem) {%>
+            case '<%= upperFirst(classItem.className) %>':
+                documentContentContext.<%= lowerFirst(classItem.className) %>Content = new <%= upperFirst(classItem.className) %>ContentAdapter(documentData, adaptDocumentData).adapt(); 
                 break;
         <% }); %>       
         }

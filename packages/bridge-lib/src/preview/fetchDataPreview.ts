@@ -185,14 +185,16 @@ async function fetchDocumentDataBySlug(
 ): Promise<DocumentData> {
     let result: DocumentData = {};
     let foundDocument: DocumentRecord_Bean | undefined;
+    console.log('[fetchDocumentDataBySlug] documentSlug: ', documentSlug);
     if (documentSlug) {
         foundDocument = findDocumentBySlug(siteMap.root, documentSlug, locale);
-        if (!foundDocument) {
-            foundDocument = findDocumentBySlug(siteMap.root, documentSlug, siteMap.defaultLocale);
-        }
+        // if (!foundDocument) {
+        //     foundDocument = findDocumentBySlug(siteMap.root, documentSlug, siteMap.defaultLocale);
+        // }
     } else {
-        foundDocument = siteMap.root.children.find(i => i.type === 'main_page');
+        foundDocument = siteMap.root.children.find(i => i.type === 'main_page' && i.contents[locale]);
     }
+    console.log('[fetchDocumentDataBySlug] foundDocument: ', foundDocument);
     if (foundDocument) {
         result = await fetchDocumentDataById(previewConfig, siteMap, foundDocument.id, locale);
     }

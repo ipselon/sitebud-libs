@@ -1,5 +1,5 @@
 export type TagsList = {
-    tags: Array<string>;
+    tags?: Array<string>;
     isRequired?: boolean;
     itemsLimit?: number;
 };

@@ -3,16 +3,22 @@ import fs from 'fs-extra';
 import upperFirst from 'lodash/upperFirst';
 import lowerFirst from 'lodash/lowerFirst';
 import template from 'lodash/template';
+import {DocumentClass_Index, DocumentType} from '@sitebud/domain-lib';
 import {formatTS} from './prettierWrapper';
 import {adaptersHooksTemplate} from './adaptersHooksTemplate';
 import {adaptersIndexTemplate} from './adaptersIndexTemplate';
 import {adaptersTypesTemplate} from './adaptersTypesTemplate';
 
+type DocumentClassTemplate = {
+    className: string;
+    documentType: DocumentType;
+};
+
 type TemplateObject = {
     libPaths: Record<LibName, string>;
     upperFirst: typeof upperFirst;
     lowerFirst: typeof lowerFirst;
-    classNames: Array<string>;
+    classes: Array<DocumentClassTemplate>;
 };
 
 type LibName = 'bridgeLib' | 'domainLib';
@@ -23,22 +29,29 @@ const defaultLibsPaths: Record<LibName, string> = {
 };
 
 export class AdaptersCommonsGenerator {
-    private _documentClassNames: Array<string>;
+    private _documentClasses: DocumentClass_Index;
     private _libsPaths: Record<LibName, string>;
     private _outputDirPath: string;
 
-    constructor(documentClassNames: Array<string>, outputDirPath: string) {
-        this._documentClassNames = documentClassNames;
+    constructor(documentClasses: DocumentClass_Index, outputDirPath: string) {
+        this._documentClasses = documentClasses;
         this._libsPaths = defaultLibsPaths;
         this._outputDirPath = outputDirPath;
     }
 
     private createTemplateObject(): TemplateObject {
+        const classes: Array<DocumentClassTemplate> = [];
+        for (const documentClass of Object.entries(this._documentClasses)) {
+            classes.push({
+                className: documentClass[0],
+                documentType: documentClass[1].type
+            });
+        }
         return {
             libPaths: this._libsPaths,
             upperFirst,
             lowerFirst,
-            classNames: this._documentClassNames
+            classes
         } as TemplateObject;
     }
 

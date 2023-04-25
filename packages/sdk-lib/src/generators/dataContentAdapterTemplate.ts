@@ -4,7 +4,7 @@ import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_Docume
 
 export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content <% if (documentType !== 'site') {%>, path<% } %><% if (documentType === 'site') {%>, tagsLinks<% } %>} = this._documentData;
+        const {content <% if (documentType !== 'site') {%>, path, locale<% } %><% if (documentType === 'site') {%>, tagsLinks<% } %>} = this._documentData;
         const result: <%= upperFirst(className) %>Content = {
             <% if (documentType !== 'site') {%>title: content?.title || 'undefined',<% } %>
             <% if (documentType !== 'site') {%>slug: content?.slug || 'undefined',<% } %>
@@ -12,6 +12,7 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             <% if (documentType !== 'site') {%>dateUpdated: content?.dateUpdated,<% } %>
             <% if (documentType !== 'site') {%>authors: content?.authors,<% } %>
             <% if (documentType !== 'site') {%>path: path || '',<% } %>
+            <% if (documentType !== 'site') {%>locale,<% } %>
             <% if (documentType === 'site') {%>tagsLinks: tagsLinks || {},<% } %>
             <% if (documentType === 'site') {%>authorProfiles: {},<% } %>
             <% if (dataFields && dataFields.length > 0) { %>

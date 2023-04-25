@@ -28,11 +28,11 @@ export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, 
     let foundDocument: DocumentRecord_Bean | undefined;
     if (documentSlug) {
         foundDocument = findDocument(siteMap.root, documentSlug, locale || siteMap.defaultLocale);
-        if (!foundDocument) {
-            foundDocument = findDocument(siteMap.root, documentSlug, siteMap.defaultLocale);
-        }
+        // if (!foundDocument) {
+        //     foundDocument = findDocument(siteMap.root, documentSlug, siteMap.defaultLocale);
+        // }
     } else {
-        foundDocument = siteMap.root.children.find(i => i.type === 'main_page');
+        foundDocument = siteMap.root.children.find(i => i.type === 'main_page' && i.contents[locale || siteMap.defaultLocale]);
     }
     if (!foundDocument) {
         throw Error('Document is not found');

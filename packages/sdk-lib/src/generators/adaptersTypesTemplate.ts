@@ -1,10 +1,8 @@
 export const adaptersTypesTemplate: string = `
-<% classNames.forEach(function(className) {%>import {<%= upperFirst(className) %>Content} from './<%= upperFirst(className) %>Content';<% }); %>
-<% classNames.forEach(function(className) {%>export * from './<%= upperFirst(className) %>Content';<% }); %>
+<% classes.forEach(function(classItem) {%>import {<%= upperFirst(classItem.className) %>Content} from './<%= upperFirst(classItem.className) %>Content';<% }); %>
+<% classes.forEach(function(classItem) {%>export * from './<%= upperFirst(classItem.className) %>Content';<% }); %>
 export type DataFieldType = 'string' | 'number';
 export type DocumentContentContext = {
-<% classNames.forEach(function(className) {%>
-    <%= lowerFirst(className) %>Content?: <%= upperFirst(className) %>Content;
-<% }); %>
+<% classes.forEach(function(classItem) {%><%= lowerFirst(classItem.className) %>Content?: <%= upperFirst(classItem.className)%>Content;<% }); %>
 };
 `;

@@ -16,12 +16,18 @@ function sendMessageToOpener(message: any): void {
 
 const handleMessageFromOpener = (bus: PreviewBus) => (event: any): void => {
     const {data, origin} = event;
-    // console.log('Received message from ', origin, message);
+    console.log('Received message from ', origin, data);
     if (data.type === 'PREVIEW_CONFIG_RESPONSE') {
         if (bus.previewConfigResponseCallback) {
             const newConfig: PreviewConfig = data.config;
             const changesData: any = data.changesData;
             bus.previewConfigResponseCallback(newConfig, changesData);
+        }
+    } else if (data.type === 'PREVIEW_CONFIG_CHANGE') {
+        if (bus.previewConfigChangeCallback) {
+            const newConfig: PreviewConfig = data.config;
+            const changesData: any = data.changesData;
+            bus.previewConfigChangeCallback(newConfig, changesData);
         }
     }
 }
@@ -31,6 +37,7 @@ export class PreviewBus {
     private _previewConfig: PreviewConfig | undefined;
     private _changesData: any;
     private _previewConfigResponseCallback: ((previewConfig: PreviewConfig | undefined, changesData: any, error?: string) => void) | undefined;
+    private _previewConfigChangeCallback: ((previewConfig: PreviewConfig | undefined, changesData: any, error?: string) => void) | undefined;
 
     constructor() {
         window.addEventListener("message", handleMessageFromOpener(this), false);
@@ -38,6 +45,14 @@ export class PreviewBus {
 
     destroy() {
         window.removeEventListener("message", handleMessageFromOpener(this), false);
+        this._previewConfig = undefined;
+        this._changesData = undefined;
+        this._previewConfigResponseCallback = undefined;
+        this._previewConfigChangeCallback = undefined;
+        if (this._timeoutId) {
+            clearTimeout(this._timeoutId);
+            this._timeoutId = undefined;
+        }
     }
 
     get previewConfig(): PreviewConfig | undefined {
@@ -54,6 +69,19 @@ export class PreviewBus {
 
     get timeoutId(): ReturnType<typeof setTimeout> | undefined {
         return this._timeoutId;
+    }
+
+    get previewConfigChangeCallback(): ((previewConfig: (PreviewConfig | undefined), changesData: any, error?: string) => void) | undefined {
+        return this._previewConfigChangeCallback;
+    }
+
+    onPreviewConfigChange(callback: (error?: string) => void): void {
+        const self = this;
+        this._previewConfigChangeCallback = (previewConfig, changesData) => {
+            self._previewConfig = previewConfig;
+            self._changesData = changesData;
+            callback();
+        };
     }
 
     initPreviewConfig(callback: (error?: string) => void): void {
