@@ -16,7 +16,11 @@ export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string
         });
         if (foundDocumentRecords && foundDocumentRecords.length > 0) {
             for (const documentItem of foundDocumentRecords) {
-                resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, locale));
+                try {
+                    resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, locale));
+                } catch (e: any) {
+                    console.error(`[SiteBub CMS] ${e.message}`);
+                }
             }
         }
     }

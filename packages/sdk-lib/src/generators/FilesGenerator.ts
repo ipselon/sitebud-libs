@@ -33,7 +33,7 @@ export class FilesGenerator {
                 documentClassTuple[0],
                 documentClassTuple[1],
                 this._adaptersDirPath
-            ).generate()
+            ).generate();
         }
         await new AdaptersCommonsGenerator(this._documentClasses, this._adaptersDirPath).generate();
         await generateJsonFile(this._documentClasses, path.join(this._configDirPath, 'documentClassIndex.json'));

@@ -1,24 +1,24 @@
-let localStorage: Record<string, any> = {};
+let memoryStorage: Record<string, any> = {};
 
 export function getChanges(key: string) {
-  return localStorage[key];
+  return memoryStorage[key];
 }
 export function setChanges(key: string, val: any) {
-  localStorage[key] = val;
+  memoryStorage[key] = val;
 }
 export function setChangesBulk(data: any) {
   Object.keys(data).forEach((keyItem: string) => {
-    localStorage[keyItem] = data[keyItem];
+    memoryStorage[keyItem] = data[keyItem];
   });
 }
 export function delChanges(key: string) {
-  delete localStorage[key];
+  delete memoryStorage[key];
 }
 export function clearChanges() {
-  localStorage = {};
+  memoryStorage = {};
 }
 export function keysChanges() {
-  return Object.keys(localStorage);
+  return Object.keys(memoryStorage);
 }
 export function countChanges() {
   return keysChanges().length;

@@ -11,7 +11,11 @@ export async function fetchDocumentsDataByParentId(siteMap: SiteMap_Bean, parent
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
         for (const documentItem of foundParentDocumentRecord.children) {
-            resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, locale));
+            try {
+                resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, locale));
+            } catch (e: any) {
+                console.error(`[SiteBub CMS] ${e.message}`);
+            }
         }
     }
     return resultList;

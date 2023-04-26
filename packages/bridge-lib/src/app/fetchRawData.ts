@@ -15,8 +15,12 @@ async function fetchExtraData(documentData: DocumentData, siteMap: SiteMap_Bean,
         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[validLocale];
         if (localeAuthorDocumentIds) {
             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-                const authorDocumentData: DocumentData = await fetchDocumentDataById(siteMap, authorDocumentId[1], locale);
-                documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorDocumentData, siteMap, locale);
+                try {
+                    const authorDocumentData: DocumentData = await fetchDocumentDataById(siteMap, authorDocumentId[1], locale);
+                    documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorDocumentData, siteMap, locale);
+                } catch (e: any) {
+                    console.error(`[SiteBub CMS] ${e.message}`);
+                }
             }
         }
     }
@@ -44,7 +48,11 @@ async function fetchData(siteMap: SiteMap_Bean, locale?: string, slug?: string):
     if (documentDataById) {
         const newPageDataByIdMap: Record<string, DocumentData> = {};
         for (const documentId of Object.keys(documentDataById)) {
-            newPageDataByIdMap[documentId] = await fetchDocumentDataById(siteMap, documentId, locale);
+            try {
+                newPageDataByIdMap[documentId] = await fetchDocumentDataById(siteMap, documentId, locale);
+            } catch (e: any) {
+                console.error(`[SiteBub CMS] ${e.message}`);
+            }
         }
         documentData.documentDataById = newPageDataByIdMap;
     }

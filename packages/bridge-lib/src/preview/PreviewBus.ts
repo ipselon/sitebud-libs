@@ -29,6 +29,11 @@ const handleMessageFromOpener = (bus: PreviewBus) => (event: any): void => {
             const changesData: any = data.changesData;
             bus.previewConfigChangeCallback(newConfig, changesData);
         }
+    } else if (data.type === 'PREVIEW_CLEAR_CACHE') {
+        if (bus.previewClearCacheCallback) {
+            const newConfig: PreviewConfig = data.config;
+            bus.previewClearCacheCallback(newConfig);
+        }
     }
 }
 
@@ -37,7 +42,8 @@ export class PreviewBus {
     private _previewConfig: PreviewConfig | undefined;
     private _changesData: any;
     private _previewConfigResponseCallback: ((previewConfig: PreviewConfig | undefined, changesData: any, error?: string) => void) | undefined;
-    private _previewConfigChangeCallback: ((previewConfig: PreviewConfig | undefined, changesData: any, error?: string) => void) | undefined;
+    private _previewConfigChangeCallback: ((previewConfig: PreviewConfig | undefined, changesData: any) => void) | undefined;
+    private _previewClearCacheCallback: ((previewConfig: PreviewConfig | undefined) => void) | undefined;
 
     constructor() {
         window.addEventListener("message", handleMessageFromOpener(this), false);
@@ -49,6 +55,7 @@ export class PreviewBus {
         this._changesData = undefined;
         this._previewConfigResponseCallback = undefined;
         this._previewConfigChangeCallback = undefined;
+        this._previewClearCacheCallback = undefined;
         if (this._timeoutId) {
             clearTimeout(this._timeoutId);
             this._timeoutId = undefined;
@@ -71,15 +78,28 @@ export class PreviewBus {
         return this._timeoutId;
     }
 
-    get previewConfigChangeCallback(): ((previewConfig: (PreviewConfig | undefined), changesData: any, error?: string) => void) | undefined {
+    get previewConfigChangeCallback(): ((previewConfig: (PreviewConfig | undefined), changesData: any) => void) | undefined {
         return this._previewConfigChangeCallback;
     }
 
-    onPreviewConfigChange(callback: (error?: string) => void): void {
+    get previewClearCacheCallback(): ((previewConfig: (PreviewConfig | undefined)) => void) | undefined {
+        return this._previewClearCacheCallback;
+    }
+
+    onPreviewConfigChange(callback: () => void): void {
         const self = this;
         this._previewConfigChangeCallback = (previewConfig, changesData) => {
             self._previewConfig = previewConfig;
             self._changesData = changesData;
+            callback();
+        };
+    }
+
+    onClearCache(callback: () => void): void {
+        const self = this;
+        this._previewClearCacheCallback = (previewConfig) => {
+            self._previewConfig = previewConfig;
+            self._changesData = {};
             callback();
         };
     }

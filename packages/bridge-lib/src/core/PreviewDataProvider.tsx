@@ -12,15 +12,15 @@ interface PreviewDataProviderProps {
     children: React.ReactNode;
 }
 
-const html: string = `
+const octokitCDNScript: string = `
 import { Octokit, App } from 'https://cdn.skypack.dev/octokit';
 window.Octokit = Octokit;
 window.App = App;
 `;
 
+
 export function PreviewDataProvider(props: PreviewDataProviderProps) {
     const {Script, custom404, locale, slug, children} = props;
-    console.log('[PreviewDataProvider] slug: ', locale, slug);
     const {status, siteDataPreview, pageDataPreview, error} = usePreview(true, locale, slug);
     return (
         <>
@@ -29,7 +29,7 @@ export function PreviewDataProvider(props: PreviewDataProviderProps) {
                 type="module"
                 strategy="beforeInteractive"
                 dangerouslySetInnerHTML={{
-                    __html: html
+                    __html: octokitCDNScript
                 }}
             />
             {status === 'uninitialized' && (

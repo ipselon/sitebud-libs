@@ -20,6 +20,7 @@ export default {
     external: [
         'react',
         'react-dom',
+        'idb',
         '@sitebud/domain-lib'
     ],
     plugins: [

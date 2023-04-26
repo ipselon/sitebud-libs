@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import {DocumentData, Data} from './types';
-import {fetchDataPreview} from '../preview/fetchDataPreview';
+import {fetchDataPreview, cleanDataCache} from '../preview/fetchDataPreview';
 import {PreviewBus, getPreviewBusInstance} from '../preview/PreviewBus';
 
 export interface PreviewState {
@@ -101,7 +101,27 @@ export const usePreview = (isPreview: boolean, locale: string, slug?: string): P
                                 });
                             });
                     }
-                })
+                });
+                previewBus.onClearCache(() => {
+                    const {previewConfig} = previewBus;
+                    if (!previewConfig) {
+                        setPreviewState({
+                            status: 'error',
+                            error: 'Preview Error. Missing preview config.',
+                            pageDataPreview: {},
+                            siteDataPreview: {}
+                        });
+                    } else {
+                        cleanDataCache(previewConfig).catch((error: any) => {
+                            setPreviewState({
+                                status: 'error',
+                                error: `Preview Error. ${error.message}`,
+                                pageDataPreview: {},
+                                siteDataPreview: {}
+                            });
+                        });
+                    }
+                });
             }
         }
         return () => {

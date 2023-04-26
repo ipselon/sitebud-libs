@@ -13,6 +13,9 @@
   "main": "lib/index.cjs.js",
   "module": "lib/index.esm.js",
   "types": "lib/types",
+  "dependencies": {
+    "idb": "7.1.1"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "24.0.0",
     "@rollup/plugin-node-resolve": "15.0.1",
@@ -32,6 +35,7 @@
   "peerDependencies": {
     "react": ">=18.2",
     "react-dom": ">=18.2",
-    "@sitebud/domain-lib": ">=1.0"
+    "@sitebud/domain-lib": ">=1.0",
+    "idb": ">=7.1"
   }
 }
