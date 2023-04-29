@@ -4,10 +4,25 @@ import {
     DocumentsList,
     DocumentRecord_Bean,
     DocumentContent_Base,
-    TagsList, SiteMap_Bean
+    TagsList,
+    SiteMap_Bean
 } from '@sitebud/domain-lib';
 import {DocumentData, DocumentContext, SiteMap_Index} from './types';
 import {imageResolverInstance} from './imageResolver';
+
+export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
+    let localResult: Record<string, boolean> = {};
+    Object.keys(root.contents).forEach(locale => {
+        localResult[locale] = true;
+    });
+    if (root.children && root.children.length > 0) {
+        let childDocument: DocumentRecord_Bean;
+        for (childDocument of root.children) {
+            localResult = {...localResult, ...getAllLocales(childDocument)};
+        }
+    }
+    return localResult;
+}
 
 export function makeSiteIndex(
     root: DocumentRecord_Bean,
@@ -190,6 +205,7 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
                 }
             }
         }
+        documentData.availableLocales = Object.keys(getAllLocales(siteMap.root));
     }
     return documentData;
 }

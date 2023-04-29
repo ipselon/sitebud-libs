@@ -39,6 +39,7 @@ export type DocumentData = {
     path?: string;
     locale?: string;
     tagsLinks?: Record<string, string>;
+    availableLocales?: Array<string>;
     documentDataListByTag?: Record<string, Array<DocumentData> | null>;
     documentDataListByParentId?: Record<string, Array<DocumentData> | null>;
     documentDataById?: Record<string, DocumentData | null>;

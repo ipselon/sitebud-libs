@@ -104,6 +104,7 @@ export type <%= upperFirst(className) %>Content = {
     <% if (documentType !== 'site') {%>authors?: Record<string, number>;<% } %>
     <% if (documentType !== 'site') {%>path: string;<% } %>
     <% if (documentType !== 'site') {%>locale?: string;<% } %>
+    <% if (documentType === 'site') {%>availableLocales: Array<string>;<% } %>
     <% if (documentType === 'site') {%>tagsLinks: Record<string, string>;<% } %>
     <% if (documentType === 'site') {%>authorProfiles: Record<string, DocumentContentContext>;<% } %>
     <% if (dataFields && dataFields.length > 0) { %>dataFields: <%= upperFirst(className) %>_DataFields;<% } %>
