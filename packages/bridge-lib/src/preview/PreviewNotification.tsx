@@ -1,4 +1,4 @@
-import React, {CSSProperties} from 'react';
+import React, {CSSProperties, useEffect, useState, useRef} from 'react';
 
 type NotificationSeverity = 'neutral' | 'error';
 
@@ -19,35 +19,56 @@ const styles: Record<NotificationSeverity, CSSProperties> = {
 };
 
 export function PreviewNotification(props: PreviewNotificationProps) {
-    const {message, severity = 'neutral'} = props;
-    return (
-        <div
-            style={{
-                position: 'fixed',
-                top: '1em',
-                left: '1em',
-                padding: '1px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'start',
-                backgroundColor: '#ffffff',
-                border: '1px solid #cdcdcd',
-                boxShadow: '0 1px 3px rgba(34, 25, 25, 0.4)',
-                borderRadius: '4px'
-            }}
-        >
+    const timerRef = useRef<number>();
+    const [showNotification, setShowNotification] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!timerRef.current) {
+            // @ts-ignore
+            timerRef.current = setTimeout(() => {
+                setShowNotification(true);
+            }, 500);
+        }
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+            timerRef.current = undefined;
+        };
+    }, []);
+
+    if (showNotification) {
+        const {message, severity = 'neutral'} = props;
+        return (
             <div
                 style={{
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '4px',
-                    padding: '0.5em 1em',
-                    fontSize: '12px',
-                    ...styles[severity]
+                    position: 'fixed',
+                    top: '1em',
+                    left: '1em',
+                    padding: '1px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'start',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #cdcdcd',
+                    boxShadow: '0 1px 3px rgba(34, 25, 25, 0.4)',
+                    borderRadius: '4px'
                 }}
             >
-                {message}
+                <div
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '4px',
+                        padding: '0.5em 1em',
+                        fontSize: '12px',
+                        ...styles[severity]
+                    }}
+                >
+                    {message}
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
+    return null;
 }

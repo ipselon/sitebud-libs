@@ -38,9 +38,12 @@ export function PreviewDataProvider(props: PreviewDataProviderProps) {
             {status === 'error' && (
                 <PreviewNotification message={error || 'Some error occurred. See the console output.'} severity="error" />
             )}
-            {status === 'success' && pageDataPreview?.content && (
+            {(status === 'success' || status === 'loading') && pageDataPreview?.content && (
                 <SiteDataProvider siteData={siteDataPreview}>
                     <PageDataProvider pageData={pageDataPreview}>
+                        {status === 'loading' && (
+                            <PreviewNotification message="Please wait. Loading data from GitHub..." />
+                        )}
                         {children}
                     </PageDataProvider>
                 </SiteDataProvider>

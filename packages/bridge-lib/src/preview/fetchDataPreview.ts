@@ -23,7 +23,7 @@ import {PreviewConfig} from './PreviewBus';
 import {FileDataFetchingStatus} from './types';
 import {getChanges, setChangesBulk} from './memoryStorage';
 import {Data} from '../core';
-import {getFromCache, putIntoCache, clearCache, getCacheKeys, delFromCache} from './storage/localStorage';
+import {getFromCache, putIntoCache, getCacheKeys, delFromCache} from './storage/localStorage';
 
 let branchDataStatus: { status: 'uninitialized' | 'fetching' | 'done' | 'error' } = {status: 'uninitialized'};
 
@@ -94,16 +94,16 @@ async function getFileRef(owner: string, ghToken: string, repo: string, workingB
     }
     const fileRef = (window as any).branchTreeData.tree.find((i: any) => i.path === filePath);
     await cleanLocalStorage(owner, repo);
-    if (!fileRef) {
-        throw Error(`Missing the "${filePath}" file reference in the tree`);
-    }
+    // if (!fileRef) {
+    //     throw Error(`Missing the "${filePath}" file reference in the tree`);
+    // }
     return fileRef;
 }
 
 export async function fetchDataFromBranch<T>(filePath: string, previewConfig: PreviewConfig, noCache: boolean = false): Promise<T | undefined> {
-    try {
-        const {repo, owner, ghToken, workingBranch} = previewConfig;
-        const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    const {repo, owner, ghToken, workingBranch} = previewConfig;
+    const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    if (fileRef) {
         const fileRefKey: string = makeCacheKey(owner, repo, filePath, fileRef.sha);
         let foundCached: any | undefined = await getFromCache(fileRefKey);
         if (!foundCached) {
@@ -111,16 +111,15 @@ export async function fetchDataFromBranch<T>(filePath: string, previewConfig: Pr
             await putIntoCache(fileRefKey, foundCached);
         }
         return foundCached;
-    } catch (e: any) {
-        console.error(`[SiteBud CMS] ${e.message}`);
     }
+    console.warn(`[SiteBud] Missing the "${filePath}" file reference in the tree`);
     return undefined;
 }
 
 async function fetchStringFromBranch(filePath: string, previewConfig: PreviewConfig, noCache: boolean = false): Promise<string> {
-    try {
-        const {repo, owner, ghToken, workingBranch} = previewConfig;
-        const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    const {repo, owner, ghToken, workingBranch} = previewConfig;
+    const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    if (fileRef) {
         const fileRefKey: string = makeCacheKey(owner, repo, filePath, fileRef.sha);
         let foundCached: any | undefined = await getFromCache(fileRefKey);
         if (!foundCached) {
@@ -128,16 +127,15 @@ async function fetchStringFromBranch(filePath: string, previewConfig: PreviewCon
             await putIntoCache(fileRefKey, foundCached);
         }
         return foundCached;
-    } catch (e: any) {
-        console.error(`[SiteBud CMS] ${e.message}`);
     }
+    console.warn(`[SiteBud] Missing the "${filePath}" file reference in the tree`);
     return '';
 }
 
 async function fetchImageFromBranch(filePath: string, previewConfig: PreviewConfig, noCache: boolean = false): Promise<string> {
-    try {
-        const {repo, owner, ghToken, workingBranch} = previewConfig;
-        const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    const {repo, owner, ghToken, workingBranch} = previewConfig;
+    const fileRef = await getFileRef(owner, ghToken, repo, workingBranch, filePath, noCache);
+    if (fileRef) {
         const fileRefKey: string = makeCacheKey(owner, repo, filePath, fileRef.sha);
         let foundCached: any | undefined = await getFromCache(fileRefKey);
         if (!foundCached) {
@@ -149,10 +147,9 @@ async function fetchImageFromBranch(filePath: string, previewConfig: PreviewConf
             await putIntoCache(fileRefKey, foundCached);
         }
         return foundCached;
-    } catch (e) {
-        // do not throw the error when there is no image in assets
-        return '';
     }
+    console.warn(`[SiteBud] Missing the "${filePath}" file reference in the tree`);
+    return '';
 }
 
 function findDocumentBySlug(root: DocumentRecord_Bean, documentSlug: string, locale: string): DocumentRecord_Bean | undefined {
@@ -191,7 +188,9 @@ async function fetchDocumentDataById(
         if (document.isDeleted) {
             throw Error('Page was deleted.');
         }
-        const documentContent: DocumentContent_Bean | undefined = document.contents[locale] || document.contents[siteMap.defaultLocale];
+        const documentContent: DocumentContent_Bean | undefined = document.contents[locale];
+        // todo: should we return default locale if we didn't find the document content with requested locale?
+        // const documentContent: DocumentContent_Bean | undefined = document.contents[locale] || document.contents[siteMap.defaultLocale];
         if (!documentContent) {
             throw Error('Page content is not found.');
         }
@@ -252,7 +251,11 @@ async function fetchDocumentsDataByParentId(
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
         for (const documentItem of foundParentDocumentRecord.children) {
-            resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
+            try {
+                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
+            } catch (e) {
+                // do nothing...
+            }
         }
     }
     return resultList;
@@ -271,7 +274,11 @@ async function fetchDocumentsDataByTag(
     });
     if (foundDocumentRecords && foundDocumentRecords.length > 0) {
         for (const documentItem of foundDocumentRecords) {
-            resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
+            try {
+                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, locale));
+            } catch (e) {
+                // do nothing
+            }
         }
     }
     return resultList;
@@ -311,10 +318,14 @@ async function fetchDocumentData(previewConfig: PreviewConfig, siteMap: SiteMap_
     if (result.documentDataById) {
         const newPageDataByIdMap: Record<string, DocumentData> = {};
         for (const documentId of Object.keys(result.documentDataById)) {
-            const documentData: DocumentData =
-                await fetchDocumentDataById(previewConfig, siteMap, documentId, locale);
-            if (documentData && documentData.content) {
-                newPageDataByIdMap[documentId] = documentData;
+            try {
+                const documentData: DocumentData =
+                    await fetchDocumentDataById(previewConfig, siteMap, documentId, locale);
+                if (documentData && documentData.content) {
+                    newPageDataByIdMap[documentId] = documentData;
+                }
+            } catch (e) {
+                // do nothing...
             }
         }
         result.documentDataById = newPageDataByIdMap;

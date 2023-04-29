@@ -6,7 +6,6 @@ export interface PreviewConfig {
 }
 
 function sendMessageToOpener(message: any): void {
-    // console.log('sendMessageToOpener: ', window.parent);
     if (window.parent) {
         window.parent.postMessage(message, '*');
     } else {
@@ -14,51 +13,50 @@ function sendMessageToOpener(message: any): void {
     }
 }
 
-const handleMessageFromOpener = (bus: PreviewBus) => (event: any): void => {
-    const {data, origin} = event;
-    console.log('Received message from ', origin, data);
-    if (data.type === 'PREVIEW_CONFIG_RESPONSE') {
-        if (bus.previewConfigResponseCallback) {
-            const newConfig: PreviewConfig = data.config;
-            const changesData: any = data.changesData;
-            bus.previewConfigResponseCallback(newConfig, changesData);
-        }
-    } else if (data.type === 'PREVIEW_CONFIG_CHANGE') {
-        if (bus.previewConfigChangeCallback) {
-            const newConfig: PreviewConfig = data.config;
-            const changesData: any = data.changesData;
-            bus.previewConfigChangeCallback(newConfig, changesData);
-        }
-    } else if (data.type === 'PREVIEW_CLEAR_CACHE') {
-        if (bus.previewClearCacheCallback) {
-            const newConfig: PreviewConfig = data.config;
-            bus.previewClearCacheCallback(newConfig);
-        }
-    }
-}
-
 export class PreviewBus {
     private _timeoutId: ReturnType<typeof setTimeout> | undefined;
     private _previewConfig: PreviewConfig | undefined;
     private _changesData: any;
-    private _previewConfigResponseCallback: ((previewConfig: PreviewConfig | undefined, changesData: any, error?: string) => void) | undefined;
-    private _previewConfigChangeCallback: ((previewConfig: PreviewConfig | undefined, changesData: any) => void) | undefined;
-    private _previewClearCacheCallback: ((previewConfig: PreviewConfig | undefined) => void) | undefined;
+    private _handleChange: (() => void) | undefined;
+    private _handleMessage: (event: any) => void;
 
     constructor() {
-        window.addEventListener("message", handleMessageFromOpener(this), false);
+        this._handleChange = undefined;
+        this._handleMessage = this.handleMessageFromOpener.bind(this);
+        window.addEventListener("message", this._handleMessage, false);
     }
 
     destroy() {
-        window.removeEventListener("message", handleMessageFromOpener(this), false);
+        window.removeEventListener("message", this._handleMessage, false);
         this._previewConfig = undefined;
         this._changesData = undefined;
-        this._previewConfigResponseCallback = undefined;
-        this._previewConfigChangeCallback = undefined;
-        this._previewClearCacheCallback = undefined;
+        this._handleChange = undefined;
         if (this._timeoutId) {
             clearTimeout(this._timeoutId);
             this._timeoutId = undefined;
+        }
+    }
+
+    handleMessageFromOpener(event: any): void {
+        const {data, origin} = event;
+        if (data.type === 'PREVIEW_CONFIG_RESPONSE') {
+            this.clearTimeout();
+            this._previewConfig = data.config;
+            this._changesData = data.changesData;
+            if (this._handleChange) {
+                this._handleChange();
+            }
+        } else if (data.type === 'PREVIEW_CONFIG_CHANGE') {
+            this._previewConfig = data.config;
+            this._changesData = data.changesData;
+            if (this._handleChange) {
+                this._handleChange();
+            }
+        } else if (data.type === 'PREVIEW_CLEAR_CACHE') {
+            this._previewConfig = data.config;
+            if (this._handleChange) {
+                this._handleChange();
+            }
         }
     }
 
@@ -70,64 +68,26 @@ export class PreviewBus {
         return this._changesData;
     }
 
-    get previewConfigResponseCallback(): ((previewConfig: (PreviewConfig | undefined), changesData: any, error?: string) => void) | undefined {
-        return this._previewConfigResponseCallback;
+    onChange(callback: () => void) {
+        this._handleChange = callback;
     }
 
-    get timeoutId(): ReturnType<typeof setTimeout> | undefined {
-        return this._timeoutId;
-    }
-
-    get previewConfigChangeCallback(): ((previewConfig: (PreviewConfig | undefined), changesData: any) => void) | undefined {
-        return this._previewConfigChangeCallback;
-    }
-
-    get previewClearCacheCallback(): ((previewConfig: (PreviewConfig | undefined)) => void) | undefined {
-        return this._previewClearCacheCallback;
-    }
-
-    onPreviewConfigChange(callback: () => void): void {
-        const self = this;
-        this._previewConfigChangeCallback = (previewConfig, changesData) => {
-            self._previewConfig = previewConfig;
-            self._changesData = changesData;
-            callback();
-        };
-    }
-
-    onClearCache(callback: () => void): void {
-        const self = this;
-        this._previewClearCacheCallback = (previewConfig) => {
-            self._previewConfig = previewConfig;
-            self._changesData = {};
-            callback();
-        };
+    clearTimeout(): void {
+        if (this._timeoutId) {
+            clearTimeout(this._timeoutId);
+            this._timeoutId = undefined;
+        }
     }
 
     initPreviewConfig(callback: (error?: string) => void): void {
         try {
             const self = this;
             this._timeoutId = setTimeout(() => {
-                self._previewConfigResponseCallback = undefined;
                 self._previewConfig = undefined;
                 self._changesData = {};
                 this._timeoutId = undefined;
                 callback('Can not connect to the opener');
             }, 3000);
-            // console.log('[Context] setTimeout: ', this._timeoutId);
-            this._previewConfigResponseCallback = (previewConfig, changesData, error) => {
-                // console.log('[Context] try to clear timeout ID: ', self._timeoutId);
-                if (self._timeoutId) {
-                    // console.log('[Context] clear timeout ID: ', self._timeoutId);
-                    clearTimeout(self._timeoutId);
-                    this._timeoutId = undefined;
-                }
-                self._previewConfigResponseCallback = undefined;
-                self._previewConfig = previewConfig;
-                self._changesData = changesData;
-                callback();
-            };
-            // console.log('[Context] this, previewConfigResponseCallback: ', this, this._previewConfigResponseCallback);
             sendMessageToOpener({type: 'PREVIEW_CONFIG_REQUEST'});
         } catch (e: any) {
             if (this._timeoutId) {
@@ -139,13 +99,4 @@ export class PreviewBus {
             callback(e.message);
         }
     }
-}
-
-let instance: PreviewBus | undefined = undefined;
-
-export function getPreviewBusInstance() {
-    if (!instance) {
-        instance = new PreviewBus();
-    }
-    return instance;
 }

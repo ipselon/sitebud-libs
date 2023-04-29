@@ -1,135 +1,122 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useRef, useReducer, useState} from 'react';
 import {DocumentData, Data} from './types';
-import {fetchDataPreview, cleanDataCache} from '../preview/fetchDataPreview';
-import {PreviewBus, getPreviewBusInstance} from '../preview/PreviewBus';
+import {fetchDataPreview} from '../preview/fetchDataPreview';
+import {PreviewBus} from '../preview/PreviewBus';
 
-export interface PreviewState {
-    status: 'success' | 'error' | 'uninitialized';
+type PreviewStatus = {
+    status: 'success' | 'error' | 'uninitialized' | 'loading';
     error?: string;
+}
+type PreviewData = {
     pageDataPreview: DocumentData;
     siteDataPreview: DocumentData;
+};
+
+type PreviewStateAction = {
+    type: 'changeStatus' | 'changeData' | 'changeAll',
+    newStatus?: PreviewStatus;
+    newData?: PreviewData;
+};
+
+export type PreviewState = PreviewData & PreviewStatus;
+
+const initialState: PreviewState = {
+    status: 'uninitialized',
+    pageDataPreview: {},
+    siteDataPreview: {},
+};
+
+function reducer(state: PreviewState, action: PreviewStateAction): PreviewState {
+    const {type, newStatus, newData} = action;
+    switch (type) {
+        case 'changeAll':
+            return {
+                ...state,
+                ...newStatus,
+                ...newData
+            };
+        case 'changeData':
+            return {
+                ...state,
+                ...newData
+            };
+        case 'changeStatus':
+            return {
+                ...state,
+                ...newStatus
+            };
+        default:
+            throw new Error('Wrong action type');
+    }
 }
 
 export const usePreview = (isPreview: boolean, locale: string, slug?: string): PreviewState => {
-    const [previewState, setPreviewState] = useState<PreviewState>({
-        status: 'uninitialized',
-        pageDataPreview: {},
-        siteDataPreview: {}
-    });
+    const previewBusRef = useRef<PreviewBus>();
+    const [previewBusChangesCounter, setPreviewBusChangesCounter] = useState<number>(0);
+    const [previewState, dispatch] = useReducer(reducer, initialState);
+
     useEffect(() => {
-        let previewBus: PreviewBus;
-        if (isPreview) {
-            previewBus = getPreviewBusInstance();
-            if (!previewBus.timeoutId) {
-                previewBus.initPreviewConfig((error?: string) => {
-                    if (error) {
-                        console.error(error);
-                        setPreviewState({
-                            status: 'error',
-                            error: `Preview Error. ${error}`,
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                    } else if (!previewBus.previewConfig) {
-                        setPreviewState({
-                            status: 'error',
-                            error: 'Preview Error. Missing preview config.',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                    } else if (!locale) {
-                        setPreviewState({
-                            status: 'error',
-                            error: 'Preview Error. Missing locale identification.',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                    } else {
-                        setPreviewState({
-                            status: 'uninitialized',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                        const {changesData, previewConfig} = previewBus;
-                        fetchDataPreview(changesData, previewConfig, locale, slug)
-                            .then((dataPreview: Data) => {
-                                setPreviewState({
-                                    status: 'success',
-                                    pageDataPreview: dataPreview.pageData,
-                                    siteDataPreview: dataPreview.siteData
-                                });
-                            })
-                            .catch((error: any) => {
-                                setPreviewState({
-                                    status: 'error',
-                                    error: `Preview Error. ${error.message}`,
-                                    pageDataPreview: {},
-                                    siteDataPreview: {}
-                                });
-                            });
-                    }
+        if (previewBusRef.current && previewBusChangesCounter > 0) {
+            const {changesData, previewConfig} = previewBusRef.current;
+            if (!previewConfig) {
+                dispatch({
+                    type: 'changeStatus',
+                    newStatus: {status: 'error', error: 'Preview Error. Missing preview config.'}
                 });
-                previewBus.onPreviewConfigChange(() => {
-                    const {changesData, previewConfig} = previewBus;
-                    if (!previewConfig) {
-                        setPreviewState({
-                            status: 'error',
-                            error: 'Preview Error. Missing preview config.',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                    } else {
-                        setPreviewState({
-                            status: 'uninitialized',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
-                        });
-                        fetchDataPreview(changesData, previewConfig, locale, slug)
-                            .then((dataPreview: Data) => {
-                                setPreviewState({
-                                    status: 'success',
-                                    pageDataPreview: dataPreview.pageData,
-                                    siteDataPreview: dataPreview.siteData
-                                });
-                            })
-                            .catch((error: any) => {
-                                setPreviewState({
-                                    status: 'error',
-                                    error: `Preview Error. ${error.message}`,
-                                    pageDataPreview: {},
-                                    siteDataPreview: {}
-                                });
-                            });
-                    }
+            } else {
+                dispatch({
+                    type: 'changeStatus',
+                    newStatus: {status: 'loading'}
                 });
-                previewBus.onClearCache(() => {
-                    const {previewConfig} = previewBus;
-                    if (!previewConfig) {
-                        setPreviewState({
-                            status: 'error',
-                            error: 'Preview Error. Missing preview config.',
-                            pageDataPreview: {},
-                            siteDataPreview: {}
+                fetchDataPreview(changesData, previewConfig, locale, slug)
+                    .then((dataPreview: Data) => {
+                        dispatch({
+                            type: 'changeAll',
+                            newStatus: {status: 'success'},
+                            newData: {
+                                pageDataPreview: dataPreview.pageData,
+                                siteDataPreview: dataPreview.siteData
+                            }
                         });
-                    } else {
-                        cleanDataCache(previewConfig).catch((error: any) => {
-                            setPreviewState({
-                                status: 'error',
-                                error: `Preview Error. ${error.message}`,
+                    })
+                    .catch((error: any) => {
+                        dispatch({
+                            type: 'changeAll',
+                            newStatus: {status: 'error', error: `Preview Error. ${error.message}`},
+                            newData: {
                                 pageDataPreview: {},
                                 siteDataPreview: {}
-                            });
+                            }
+                        });
+                    });
+            }
+
+        }
+    }, [
+        previewBusChangesCounter,
+        locale,
+        slug
+    ]);
+
+    useEffect(() => {
+        if (isPreview && !previewBusRef.current) {
+            previewBusRef.current = new PreviewBus();
+            if (previewBusRef.current) {
+                previewBusRef.current.onChange(() => {
+                    setPreviewBusChangesCounter((prevValue: number) => prevValue + 1);
+                });
+                previewBusRef.current.initPreviewConfig((error?: string) => {
+                    if (error) {
+                        console.error(error);
+                        dispatch({
+                            type: 'changeStatus',
+                            newStatus: {status: 'error', error: `Preview Error. ${error}`}
                         });
                     }
                 });
             }
         }
-        return () => {
-            if (previewBus) {
-                previewBus.destroy();
-            }
-        };
-    }, [isPreview, locale, slug]);
+    }, []);
 
     return previewState;
 }
