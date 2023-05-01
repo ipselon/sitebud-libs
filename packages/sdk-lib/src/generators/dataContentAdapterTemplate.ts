@@ -1,6 +1,6 @@
 export const dataContentAdapterTemplate: string = `
 import {ContentAdapter} from '<%= libPaths.bridgeLib %>';
-import {<%= upperFirst(className) %>Content, <%= upperFirst(className) %>_DocumentAreas, <% if (commonAreasNames && commonAreasNames.length > 0) { %><%= upperFirst(className) %>_CommonAreas<% } %>} from './types';
+import {<%= upperFirst(className) %>Content,<% if (documentAreasNames && documentAreasNames.length > 0) { %><%= upperFirst(className) %>_DocumentAreas,<% } %><% if (commonAreasNames && commonAreasNames.length > 0) { %><%= upperFirst(className) %>_CommonAreas<% } %>} from './types';
 
 export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
@@ -19,9 +19,11 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             <% if (dataFields && dataFields.length > 0) { %>
             dataFields: {},
             <% } %>
+            <% if (documentAreasNames && documentAreasNames.length > 0) { %>
             documentAreas: {
                 <% documentAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
             },
+            <% } %>
             <% if (commonAreasNames && commonAreasNames.length > 0) { %>
             commonAreas: {
                 <% commonAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
