@@ -18,10 +18,6 @@ export default {
         },
     ],
     external: [
-        'lodash/forOwn',
-        'lodash/get',
-        'lodash/set',
-        'lodash/isNil',
         'nanoid',
         'react',
         'react-dom'

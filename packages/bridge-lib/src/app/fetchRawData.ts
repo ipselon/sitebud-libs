@@ -7,6 +7,7 @@ import {fetchDocumentData} from './fetchDocumentData';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
+import {putIntoSearch} from './putIntoSearch';
 
 async function fetchExtraData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): Promise<DocumentData> {
     documentData.authorProfiles = {};
@@ -75,12 +76,13 @@ async function fetchData(siteMap: SiteMap_Bean, locale?: string, slug?: string):
 export async function fetchRawData(locale?: string, slug?: string): Promise<Data> {
     const siteMap: SiteMap_Bean = await fetchSiteMapData();
     if (!siteMap) {
-        console.error('Can not read "siteMap.json" file.');
+        console.error('Can not read "data/siteMap.json" file.');
         throw Error('Not Found');
     }
     const pageData: DocumentData = await fetchData(siteMap, locale, slug);
     let siteData: DocumentData = await fetchData(siteMap, locale, '@site');
     siteData = await fetchExtraData(siteData, siteMap, locale);
+    await putIntoSearch(pageData, locale || siteMap.defaultLocale);
     return {
         pageData,
         siteData

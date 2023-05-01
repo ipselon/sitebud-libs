@@ -78,3 +78,10 @@ export type Data = {
     pageData: DocumentData;
     siteData: DocumentData;
 };
+
+export type SearchIndexItem = {
+    keyPath: string;
+    locale: string;
+    title: string;
+    chunks: Array<string>;
+}

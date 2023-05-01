@@ -66,7 +66,7 @@ export function makeSiteIndex(
 
 const URL_BASE: string | undefined = process.env.SB_WEBSITE_URL_BASE;
 
-const siteMapXMLWrapperTemplate = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><% for (const siteIndexRecord of Object.entries(siteIndex)) { %><% if (siteIndexRecord[1].includeInSiteMap) { %><url><loc><%= URL_BASE %><%= siteIndexRecord[1].nodePath %></loc><% for (const byLocaleItem of Object.entries(siteIndexRecord[1].byLocale)) { %><xhtml:link rel="alternate" hreflang="<%= byLocaleItem[0] %>" href="<%= URL_BASE %>/<%= byLocaleItem[0] %><%= siteIndexRecord[1].nodePath %>"/><% } %></url><% } %><% } %></urlset>
+const siteMapXMLWrapperTemplate = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><% for (const siteIndexRecord of Object.entries(siteIndex)) { %><% if (siteIndexRecord[1].includeInSiteMap) { %><url><loc><%= URL_BASE %><%= siteIndexRecord[1].nodePath %></loc><% for (const byLocaleItem of Object.entries(siteIndexRecord[1].byLocale)) { %><% if (byLocaleItem[1].includeInSiteMap) { %><xhtml:link rel="alternate" hreflang="<%= byLocaleItem[0] %>" href="<%= URL_BASE %>/<%= byLocaleItem[0] %><%= byLocaleItem[1].nodePath %>"/><% } %><% } %></url><% } %><% } %></urlset>
 `;
 
 export async function generateSiteMapXML(): Promise<void> {
@@ -78,7 +78,6 @@ export async function generateSiteMapXML(): Promise<void> {
         const siteMapFilePath = path.join(process.cwd(), 'data/siteMap.json');
         const siteMap = await fs.readJSON(siteMapFilePath);
         const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, siteMap.defaultLocale);
-
         const fileBody: string = template(siteMapXMLWrapperTemplate)({URL_BASE, siteIndex});
         const siteMapXMLFilePath = path.join(process.cwd(), 'public/sitemap.xml');
         await fs.ensureFile(siteMapXMLFilePath);

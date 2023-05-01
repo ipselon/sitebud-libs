@@ -131,7 +131,7 @@ export abstract class ContentAdapter<T> {
         }
         for (const propSpec of propsSpec) {
             if (!fulfilledProps.includes(propSpec.name)) {
-                console.error(`[SiteBud ContentAdapter] missing the "${propSpec.name}" property in the "${this._documentData.name}" document data schema.`)
+                console.error(`[SiteBud CMS] missing the "${propSpec.name}" property in the "${this._documentData.name}" document data schema.`)
                 switch (propSpec.type) {
                     case 'Icon':
                         result[propSpec.name] = '';
@@ -199,7 +199,7 @@ export abstract class ContentAdapter<T> {
                     }
                 }
             } else {
-                console.error(`[SiteBud ContentAdapter] the "${componentsItem.name}" component in the document data does not exist in the "${this._documentData.name}" document data schema.`);
+                console.error(`[SiteBud CMS] the "${componentsItem.name}" component in the document data does not exist in the "${this._documentData.name}" document data schema.`);
             }
         }
         for (const componentSpec of Object.entries(componentsSpec)) {
