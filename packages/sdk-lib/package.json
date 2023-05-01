@@ -1,6 +1,6 @@
 {
   "name": "@sitebud/sdk-lib",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.2",
   "description": "SiteBud SDK library",
   "author": "Oleksandr Pustovalov <apustovalov@gmail.com>",
   "license": "MIT",
@@ -26,14 +26,13 @@
     "@types/fs-extra": "11.0.1",
     "@types/lodash": "4.14.191",
     "@types/node": "18.11.0",
-    "@sitebud/domain-lib": "1.0.0",
+    "@sitebud/domain-lib": "1.0.0-alpha.2",
     "del-cli": "5.0.0",
     "tslib": "2.4.1",
     "typescript": "4.9.4"
   },
   "peerDependencies": {
-    "@sitebud/domain-lib": ">=1.0",
-    "lodash": ">=4.17"
+    "@sitebud/domain-lib": ">=1.0"
   },
   "files": [
     "lib",

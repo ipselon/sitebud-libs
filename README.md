@@ -1,2 +1,1 @@
-# sitebud-libs
-Libraries for SiteBud CMS
+# Libraries for SiteBud CMS

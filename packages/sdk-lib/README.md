@@ -1,2 +1,2 @@
-# SiteBud bridge library
+# SiteBud SDK library
 

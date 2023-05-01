@@ -17,11 +17,6 @@ export default {
             format: 'es',
         },
     ],
-    external: [
-        'nanoid',
-        'react',
-        'react-dom'
-    ],
     plugins: [
         resolve({ preferBuiltins: true }),
         commonjs(),
