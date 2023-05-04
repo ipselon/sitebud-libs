@@ -3,6 +3,7 @@ import {PreviewNotification} from '../preview/PreviewNotification';
 import {PageDataProvider} from './PageDataProvider';
 import {SiteDataProvider} from './SiteDataProvider';
 import {usePreview} from './usePreview';
+import {PreviewModeMark} from '../preview/PreviewModeMark';
 
 interface PreviewDataProviderProps {
     Script: React.FC<any>;
@@ -69,6 +70,7 @@ export function PreviewDataProvider(props: PreviewDataProviderProps) {
                     __html: octokitCDNScript
                 }}
             />
+            <PreviewModeMark />
             {content}
         </>
     );

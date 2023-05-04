@@ -42,6 +42,7 @@ export function PreviewNotification(props: PreviewNotificationProps) {
         return (
             <div
                 style={{
+                    zIndex: 9999,
                     position: 'fixed',
                     top: '1em',
                     left: '1em',

@@ -6,8 +6,8 @@ export interface PreviewConfig {
 }
 
 function sendMessageToOpener(message: any): void {
-    if (window.parent) {
-        window.parent.postMessage(message, '*');
+    if (window.opener) {
+        window.opener.postMessage(message, '*');
     } else {
         throw Error('Missing the parent window');
     }
