@@ -24,7 +24,7 @@ function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: s
     }
 }
 
-export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, documentSlug?: string): Promise<DocumentData> {
+export async function fetchDocumentData(siteMap: SiteMap_Bean, accessLevel: number, locale?: string, documentSlug?: string): Promise<DocumentData> {
     let foundDocument: DocumentRecord_Bean | undefined;
     if (documentSlug) {
         foundDocument = findDocument(siteMap.root, documentSlug, locale || siteMap.defaultLocale);
@@ -37,5 +37,5 @@ export async function fetchDocumentData(siteMap: SiteMap_Bean, locale?: string, 
     if (!foundDocument) {
         throw Error('Document is not found');
     }
-    return await fetchDocumentDataById(siteMap, foundDocument.id, locale);
+    return await fetchDocumentDataById(siteMap, foundDocument.id, accessLevel, locale);
 }

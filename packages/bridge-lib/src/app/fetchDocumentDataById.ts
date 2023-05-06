@@ -1,15 +1,14 @@
 import {
     Document_Bean,
     DocumentContent_Bean,
-    SiteMap_Bean,
-    Document_Common,
-    DocumentContent_Common
+    SiteMap_Bean
 } from '@sitebud/domain-lib';
 import type {DocumentData} from '../core';
 import {createDocumentData} from '../core/documentDataFactory';
 import {readDataFromFile} from './readDataFromFile';
+import {removeRestrictedBlocks} from '../core/documentDataUtility';
 
-export async function fetchDocumentDataById(siteMap: SiteMap_Bean, documentId: string, locale?: string): Promise<DocumentData> {
+export async function fetchDocumentDataById(siteMap: SiteMap_Bean, documentId: string, accessLevel: number, locale?: string): Promise<DocumentData> {
     const validLocale: string = locale || siteMap.defaultLocale;
     let document: Document_Bean = await readDataFromFile<Document_Bean>(`data/documents/${documentId}.json`);
     if (!document) {
@@ -21,23 +20,8 @@ export async function fetchDocumentDataById(siteMap: SiteMap_Bean, documentId: s
     if (!documentContent) {
         throw Error(`Document "${documentId}" content for "${locale}" locale is not found.`);
     }
-    let documentCommon: Document_Common | undefined = undefined;
-    try {
-        documentCommon = await readDataFromFile<Document_Bean>(`data/commons/${document.documentClass}.json`);
-    } catch (e) {
-        // do nothing if there is no common class data
-    }
-    if (!documentCommon) {
-        documentContent.commonAreas = [];
-    } else if (documentCommon && documentCommon.contents) {
-        const documentCommonContent: DocumentContent_Common | undefined = documentCommon.contents[validLocale];
-        // todo: should we return default locale if we didn't find the document common content with requested locale?
-        // const documentCommonContent: DocumentContent_Common | undefined = documentCommon.contents[validLocale] || documentCommon.contents[siteMap.defaultLocale];
-        if (documentCommonContent) {
-            documentContent.commonAreas = documentCommonContent.commonAreas || [];
-        } else {
-            documentContent.commonAreas = [];
-        }
+    if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
+        documentContent.documentAreas = removeRestrictedBlocks(documentContent.documentAreas, accessLevel);
     }
     return await createDocumentData({
         locale: validLocale,

@@ -40,8 +40,6 @@ type TemplateObject = {
     dataFields: Array<string>;
     documentAreasNames: Array<string>;
     documentAreas: Record<string, TemplateAreaObject>;
-    commonAreasNames: Array<string>;
-    commonAreas: Record<string, TemplateAreaObject>;
 };
 
 type LibName = 'bridgeLib' | 'domainLib';
@@ -110,9 +108,7 @@ export class DataContentAdapterGenerator {
             className: this._className,
             dataFields: [],
             documentAreasNames: [],
-            documentAreas: {},
-            commonAreasNames: [],
-            commonAreas: {}
+            documentAreas: {}
         };
         let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(this._documentClass.dataFields);
         dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
@@ -124,12 +120,6 @@ export class DataContentAdapterGenerator {
         const documentAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.documentAreas);
         result.documentAreasNames = documentAreasTemplateObject.areasNames;
         result.documentAreas = documentAreasTemplateObject.areas;
-
-        if (this._documentClass.commonAreas) {
-            const commonAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.commonAreas);
-            result.commonAreasNames = commonAreasTemplateObject.areasNames;
-            result.commonAreas = commonAreasTemplateObject.areas;
-        }
         return result;
     }
 

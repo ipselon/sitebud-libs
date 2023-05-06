@@ -31,6 +31,7 @@ export type DocumentContentBlockComponent = {
 export type DocumentContentBlock = {
     id?: string;
     name: string; // unique name
+    accessLevel?: number;
     components: Array<DocumentContentBlockComponent>;
 };
 
@@ -61,12 +62,7 @@ export type DocumentContent_Base = {
 export type DocumentContent_Bean = DocumentContent_Base & {
     dataFields: Array<DocumentContentDataField>;
     documentAreas: Array<DocumentContentArea>;
-    commonAreas: Array<DocumentContentArea>;
     statusMap: DocumentContentStatusMap;
-};
-
-export type DocumentContent_Common = {
-    commonAreas: Array<DocumentContentArea>;
 };
 
 export type Document_Base = {
@@ -79,11 +75,6 @@ export type Document_Bean = Document_Base & {
     isDeleted?: boolean;
     contents: Record<LocaleType, DocumentContent_Bean>;
 }
-
-export type Document_Common = {
-    contents: Record<LocaleType, DocumentContent_Common>;
-    documentClass: string;
-};
 
 export type DocumentRecord_Bean = Document_Base & {
     contents: Partial<Record<LocaleType, DocumentContent_Base>>;

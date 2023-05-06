@@ -9,9 +9,10 @@ import {DocumentContentContext,<% if (dataFields && dataFields.length > 0) { %> 
 
 <% forOwn(areaObject, function(blockComponents, blockName) { %>
 /**
- * From <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>
+ * From <%= upperFirst(className) %>_<%= upperFirst(areaName) %>
  */
-export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
+export type <%= upperFirst(className) %>_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
+    __accessLevel?: number;
     <% blockComponents.forEach(function(componentObject) { %>
         <% if (componentObject.isArray) { %>
             <%= componentObject.name %>: Array<{<% printProps(componentObject.name, componentObject.componentProps) %>}>;
@@ -25,9 +26,9 @@ export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) 
 /**
  * From Document Areas
  */
-export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %> = Array<{
+export type <%= upperFirst(className) %>_<%= upperFirst(areaName) %> = Array<{
     <% forOwn(areaObject, function(blockComponents, blockName) { %>
-        <%= blockName %>?: <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
+        <%= blockName %>?: <%= upperFirst(className) %>_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
     <% }); %>
 }>;
 
@@ -38,46 +39,7 @@ export type <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) 
  */
 export type <%= upperFirst(className) %>_DocumentAreas = {
 <% forOwn(documentAreas, function(areaObject, areaName) { %>
-    <%= areaName %>: <%= upperFirst(className) %>_DocumentAreas_<%= upperFirst(areaName) %>;
-<% }); %>
-};
-
-<% } %>
-
-<% if (commonAreasNames && commonAreasNames.length > 0) { %>
-<% forOwn(commonAreas, function(areaObject, areaName) { %>
-
-<% forOwn(areaObject, function(blockComponents, blockName) { %>
-/**
- * From <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>
- */
-export type <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %> = {
-    <% blockComponents.forEach(function(componentObject){ %>
-        <% if (componentObject.isArray) { %>
-            <%= componentObject.name %>: Array<{<% printProps(componentObject.name, componentObject.componentProps) %>}>;
-        <% } else { %>
-            <%= componentObject.name %>: {<% printProps(componentObject.name, componentObject.componentProps) %>};
-        <% } %>
-    <% }); %>
-};
-<% }); %>
-
-/**
- * From Common Areas
- */
-export type <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %> = Array<{
-    <% forOwn(areaObject, function(blockComponents, blockName) { %>
-        <%= blockName %>?: <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>_<%= upperFirst(blockName) %>;
-    <% }); %>
-}>;
-<% }); %>
-
-/**
- * Common Areas
- */
-export type <%= upperFirst(className) %>_CommonAreas = {
-<% forOwn(commonAreas, function(areaObject, areaName) { %>
-    <%= areaName %>: <%= upperFirst(className) %>_CommonAreas_<%= upperFirst(areaName) %>;
+    <%= areaName %>: <%= upperFirst(className) %>_<%= upperFirst(areaName) %>;
 <% }); %>
 };
 
@@ -104,11 +66,11 @@ export type <%= upperFirst(className) %>Content = {
     <% if (documentType !== 'site') {%>authors?: Record<string, number>;<% } %>
     <% if (documentType !== 'site') {%>path: string;<% } %>
     <% if (documentType !== 'site') {%>locale?: string;<% } %>
+    hasRestrictedAreas?: boolean;
     <% if (documentType === 'site') {%>availableLocales: Array<string>;<% } %>
     <% if (documentType === 'site') {%>tagsLinks: Record<string, string>;<% } %>
     <% if (documentType === 'site') {%>authorProfiles: Record<string, DocumentContentContext>;<% } %>
     <% if (dataFields && dataFields.length > 0) { %>dataFields: <%= upperFirst(className) %>_DataFields;<% } %>
     <% if (documentAreasNames && documentAreasNames.length > 0) { %>documentAreas: <%= upperFirst(className) %>_DocumentAreas;<% } %>
-    <% if (commonAreasNames && commonAreasNames.length > 0) { %>commonAreas: <%= upperFirst(className) %>_CommonAreas;<% } %>
 };
 `;

@@ -9,6 +9,7 @@ interface PreviewDataProviderProps {
     Script: React.FC<any>;
     custom404: React.ReactNode;
     locale: string;
+    accessLevel?: number;
     slug?: string;
     children: React.ReactNode;
 }
@@ -21,8 +22,8 @@ window.App = App;
 
 
 export function PreviewDataProvider(props: PreviewDataProviderProps) {
-    const {Script, custom404, locale, slug, children} = props;
-    const {status, siteDataPreview, pageDataPreview, error} = usePreview(true, locale, slug);
+    const {Script, custom404, locale, accessLevel = 0, slug, children} = props;
+    const {status, siteDataPreview, pageDataPreview, error} = usePreview(true, locale, accessLevel, slug);
 
     let content: JSX.Element;
     let notification: JSX.Element | null = null;

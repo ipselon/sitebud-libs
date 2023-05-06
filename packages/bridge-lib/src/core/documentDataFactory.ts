@@ -9,6 +9,7 @@ import {
 } from '@sitebud/domain-lib';
 import {DocumentData, DocumentContext, SiteMap_Index} from './types';
 import {imageResolverInstance} from './imageResolver';
+import {findRestrictedBlockIndex, isRestrictedBlock} from './documentDataUtility';
 
 export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
     let localResult: Record<string, boolean> = {};
@@ -49,7 +50,7 @@ export function makeSiteIndex(
         });
     }
     accumulatorLocal[root.id] = {
-        nodePath: root.contents[validLocale] ? slugPath.replace('/@site/', '') : '',
+        nodePath: root.contents[validLocale] ? slugPath.replace('/@site/', '/') : '',
     };
     if (root.children && root.children.length > 0) {
         let childDocument: DocumentRecord_Bean;
@@ -137,14 +138,13 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
     const newDocumentData: DocumentData = {};
     if (documentContext) {
         const {documentClass, documentContent, locale, documentId, documentType} = documentContext;
+        let restrictedAreasCount: number = 0;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
+                if (isRestrictedBlock(documentArea.blocks)) {
+                    restrictedAreasCount++;
+                }
                 await processBlocks(documentArea.blocks, newDocumentData);
-            }
-        }
-        if (documentContent.commonAreas && documentContent.commonAreas.length > 0) {
-            for (const commonArea of documentContent.commonAreas) {
-                await processBlocks(commonArea.blocks, newDocumentData);
             }
         }
         newDocumentData.id = documentId;
@@ -152,6 +152,7 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
         newDocumentData.locale = locale;
         newDocumentData.name = documentClass;
         newDocumentData.type = documentType;
+        newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     }
 
     return newDocumentData;

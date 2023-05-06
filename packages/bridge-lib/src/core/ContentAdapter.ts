@@ -214,9 +214,12 @@ export abstract class ContentAdapter<T> {
         const result: Array<Record<string, any>> = [];
         for (const blocksItem of blocks) {
             const foundComponentsSpec = blocksSpec[blocksItem.name];
+            let newBlock: any;
             if (foundComponentsSpec && blocksItem.components && blocksItem.components.length > 0) {
+                newBlock = this.processComponents(blocksItem.components, foundComponentsSpec);
+                newBlock.__accessLevel = blocksItem.accessLevel;
                 result.push({
-                    [blocksItem.name]: this.processComponents(blocksItem.components, foundComponentsSpec),
+                    [blocksItem.name]: newBlock,
                 });
             }
         }
@@ -237,13 +240,6 @@ export abstract class ContentAdapter<T> {
             }
         }
         return result;
-    }
-
-    protected processCommonAreas(areasSpec: AreasSpecification): Record<string, any> {
-        if (this._documentData.content?.commonAreas && this._documentData.content.commonAreas.length > 0) {
-            return this.processAreas(this._documentData.content.commonAreas, areasSpec);
-        }
-        return {};
     }
 
     protected processDocumentAreas(areasSpec: AreasSpecification): Record<string, any> {

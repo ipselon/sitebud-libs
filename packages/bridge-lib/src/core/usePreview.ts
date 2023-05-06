@@ -50,7 +50,7 @@ function reducer(state: PreviewState, action: PreviewStateAction): PreviewState 
     }
 }
 
-export const usePreview = (isPreview: boolean, locale: string, slug?: string): PreviewState => {
+export const usePreview = (isPreview: boolean, locale: string, accessLevel: number, slug?: string): PreviewState => {
     const previewBusRef = useRef<PreviewBus>();
     const [previewBusChangesCounter, setPreviewBusChangesCounter] = useState<number>(0);
     const [previewState, dispatch] = useReducer(reducer, initialState);
@@ -68,7 +68,7 @@ export const usePreview = (isPreview: boolean, locale: string, slug?: string): P
                     type: 'changeStatus',
                     newStatus: {status: 'loading'}
                 });
-                fetchDataPreview(changesData, previewConfig, locale, slug)
+                fetchDataPreview(changesData, previewConfig, accessLevel, locale, slug)
                     .then((dataPreview: Data) => {
                         dispatch({
                             type: 'changeAll',

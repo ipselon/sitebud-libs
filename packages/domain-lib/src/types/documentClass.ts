@@ -23,11 +23,16 @@ export type DocumentContentBlockComponentClass = {
     props: Record<string, DocumentContentBlockComponentFieldClass>;
 };
 
+export type DocumentContentBlockPaywallClass = {
+    accessLevelVariants: Array<string>;
+    defaultAccessLevel: string;
+};
+
 export type DocumentContentBlockClass = {
     label: string;
     description: string;
-    imageName?: string; // an icon to depict the block in the list of blocks when the user tries to select the block to append
-    isDefault?: boolean;
+    imageName?: string;
+    paywall?: DocumentContentBlockPaywallClass;
     components: Record<string, DocumentContentBlockComponentClass>;
 };
 
@@ -63,8 +68,7 @@ export type DocumentClass = {
     defaultTitle?: string;
     defaultSlug?: string;
     dataFields: Record<string, DocumentContentDataFieldClass>;
-    documentAreas: Record<string, DocumentContentAreaClass>
-    commonAreas?: Record<string, DocumentContentAreaClass>
+    documentAreas: Record<string, DocumentContentAreaClass>;
 };
 
 export type DocumentClass_Index = Record<string, DocumentClass>;

@@ -38,6 +38,7 @@ export type DocumentData = {
     content?: DocumentContent;
     path?: string;
     locale?: string;
+    hasRestrictedAreas?: boolean;
     tagsLinks?: Record<string, string>;
     availableLocales?: Array<string>;
     documentDataListByTag?: Record<string, Array<DocumentData> | null>;
