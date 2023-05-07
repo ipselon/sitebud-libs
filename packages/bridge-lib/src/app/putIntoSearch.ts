@@ -12,7 +12,7 @@ export async function putIntoSearch(pageData: DocumentData, locale: string) {
             // Write data to file
             stream.write(`keyPath=${pageData.path};locale=${locale};title=${pageData.content?.title};text=${searchText}\n`, (err: any) => {
                 if (err) {
-                    console.error(`Can not write to the search text file. ${err.message}`);
+                    console.error(`[SiteBud CMS] Can not write to the search text file. ${err.message}`);
                 }
                 // console.log(`[SiteBud CMS] the content from ${locale}/${pageData.path} is added to the search text file.`);
             });

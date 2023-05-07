@@ -12,7 +12,6 @@ export async function fetchLinkedData(
     locale: string | undefined,
     level: number = 0
 ): Promise<DocumentData> {
-    console.log('[fetchLinkedData] level: ', level);
     const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
     if (documentDataListByParentId) {
         const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};

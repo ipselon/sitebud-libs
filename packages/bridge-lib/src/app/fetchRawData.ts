@@ -37,7 +37,7 @@ async function fetchData(siteMap: SiteMap_Bean, accessLevel: number, locale?: st
 export async function fetchRawData(accessLevel: number, locale?: string, slug?: string): Promise<Data> {
     const siteMap: SiteMap_Bean = await fetchSiteMapData();
     if (!siteMap) {
-        console.error('Can not read "data/siteMap.json" file.');
+        console.error('[SiteBud CMS] Can not read "data/siteMap.json" file.');
         throw Error('Not Found');
     }
     const pageData: DocumentData = await fetchData(siteMap, accessLevel, locale, slug);
