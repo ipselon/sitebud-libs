@@ -25,9 +25,23 @@ export function removeRestrictedBlocks(
                 newBlocks.push(testDocumentArea.blocks[restrictedBlockIndex]);
                 testDocumentArea.blocks = newBlocks;
             } else {
-                testDocumentArea.blocks = testDocumentArea.blocks.filter(i => i.accessLevel === undefined);
+                testDocumentArea.blocks = testDocumentArea.blocks.filter((i: DocumentContentBlock) => i.accessLevel === undefined);
             }
         }
     }
     return areas;
+}
+
+export function filterAreas(
+    areas: Array<DocumentContentArea>,
+    requiredDocumentAreas?: Array<string>
+): Array<DocumentContentArea> {
+    if (requiredDocumentAreas && requiredDocumentAreas.length > 0) {
+        if (requiredDocumentAreas.includes('*')) {
+            return areas;
+        }
+        return areas.filter(a => requiredDocumentAreas.includes(a.name));
+    } else {
+        return [];
+    }
 }

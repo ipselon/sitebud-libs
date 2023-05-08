@@ -9,7 +9,7 @@ import {
 } from '@sitebud/domain-lib';
 import {DocumentData, DocumentContext, SiteMap_Index} from './types';
 import {imageResolverInstance} from './imageResolver';
-import {findRestrictedBlockIndex, isRestrictedBlock} from './documentDataUtility';
+import {isRestrictedBlock} from './documentDataUtility';
 
 export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
     let localResult: Record<string, boolean> = {};
@@ -101,17 +101,34 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
                                 for (const instanceProp of componentInstance.props) {
                                     const {type, fieldContent} = instanceProp;
                                     if (type === 'DocumentsList') {
-                                        const {documentsIds, selectionMode} = fieldContent as DocumentsList;
-                                        if (documentsIds && documentsIds.length > 0) {
+                                        const {
+                                            documentsIds,
+                                            tags,
+                                            selectionMode,
+                                            selectDocumentAreas
+                                        } = fieldContent as DocumentsList;
+                                        if (selectionMode) {
                                             if (selectionMode === 'selectChildrenDocuments') {
-                                                for (const parentDocumentId of documentsIds) {
-                                                    newDocumentData.documentDataListByParentId = newDocumentData.documentDataListByParentId || {};
-                                                    newDocumentData.documentDataListByParentId[parentDocumentId] = null;
+                                                if (documentsIds && documentsIds.length > 0) {
+                                                    for (const parentDocumentId of documentsIds) {
+                                                        newDocumentData.documentDataListByParentId = newDocumentData.documentDataListByParentId || {};
+                                                        newDocumentData.documentDataListByParentId[parentDocumentId] =
+                                                            {options: {documentAreas: selectDocumentAreas || []}};
+                                                    }
                                                 }
-                                            } else {
-                                                for (const documentId of documentsIds) {
-                                                    newDocumentData.documentDataById = newDocumentData.documentDataById || {};
-                                                    newDocumentData.documentDataById[documentId] = null;
+                                            } else if (selectionMode === 'selectDocuments') {
+                                                if (documentsIds && documentsIds.length > 0) {
+                                                    for (const documentId of documentsIds) {
+                                                        newDocumentData.documentDataById = newDocumentData.documentDataById || {};
+                                                        newDocumentData.documentDataById[documentId] = {options: {documentAreas: selectDocumentAreas || []}};
+                                                    }
+                                                }
+                                            } else if (selectionMode === 'selectTags') {
+                                                if (tags && tags.length > 0) {
+                                                    for (const tag of tags) {
+                                                        newDocumentData.documentDataListByTag = newDocumentData.documentDataListByTag || {};
+                                                        newDocumentData.documentDataListByTag[tag] = {options: {documentAreas: selectDocumentAreas || []}};
+                                                    }
                                                 }
                                             }
                                         }
@@ -120,7 +137,7 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
                                         if (tags && tags.length > 0) {
                                             for (const tag of tags) {
                                                 newDocumentData.documentDataListByTag = newDocumentData.documentDataListByTag || {};
-                                                newDocumentData.documentDataListByTag[tag] = null;
+                                                newDocumentData.documentDataListByTag[tag] = {options: {documentAreas: []}};
                                             }
                                         }
                                     }
@@ -154,7 +171,6 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
         newDocumentData.type = documentType;
         newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     }
-
     return newDocumentData;
 }
 
@@ -166,15 +182,16 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
     const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
     if (documentDataById) {
         for(const documentDataItem of Object.entries(documentDataById)) {
-            if (documentDataItem[1] && documentDataItem[1].id && siteIndex[documentDataItem[1].id]) {
-                documentDataItem[1].path = siteIndex[documentDataItem[1].id].nodePath;
+            const itemId: string | undefined = documentDataItem[1]?.item?.id;
+            if (itemId && documentDataItem[1].item) {
+                documentDataItem[1].item.path = siteIndex[itemId].nodePath;
             }
         }
     }
     if (documentDataListByParentId) {
         for(const documentDataParentItem of Object.entries(documentDataListByParentId)) {
-            if (documentDataParentItem[1] && documentDataParentItem[1].length > 0) {
-                for (const documentDataItem of documentDataParentItem[1]) {
+            if (documentDataParentItem[1].array && documentDataParentItem[1].array.length > 0) {
+                for (const documentDataItem of documentDataParentItem[1].array) {
                     if (documentDataItem.id && siteIndex[documentDataItem.id]) {
                         documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
                     }
@@ -184,8 +201,8 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
     }
     if (documentDataListByTag) {
         for(const documentDataTagItem of Object.entries(documentDataListByTag)) {
-            if (documentDataTagItem[1] && documentDataTagItem[1].length > 0) {
-                for (const documentDataItem of documentDataTagItem[1]) {
+            if (documentDataTagItem[1].array && documentDataTagItem[1].array.length > 0) {
+                for (const documentDataItem of documentDataTagItem[1].array) {
                     if (documentDataItem.id && siteIndex[documentDataItem.id]) {
                         documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
                     }

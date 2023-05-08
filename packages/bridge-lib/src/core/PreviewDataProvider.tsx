@@ -4,12 +4,13 @@ import {PageDataProvider} from './PageDataProvider';
 import {SiteDataProvider} from './SiteDataProvider';
 import {usePreview} from './usePreview';
 import {PreviewModeMark} from '../preview/PreviewModeMark';
+import {RequestOptions} from './types';
 
 interface PreviewDataProviderProps {
     Script: React.FC<any>;
     custom404: React.ReactNode;
     locale: string;
-    accessLevel?: number;
+    requestOptions: RequestOptions;
     slug?: string;
     children: React.ReactNode;
 }
@@ -22,8 +23,16 @@ window.App = App;
 
 
 export function PreviewDataProvider(props: PreviewDataProviderProps) {
-    const {Script, custom404, locale, accessLevel = 0, slug, children} = props;
-    const {status, siteDataPreview, pageDataPreview, error} = usePreview(true, locale, accessLevel, slug);
+    const {Script, custom404, locale, requestOptions, slug, children} = props;
+
+    const {status, siteDataPreview, pageDataPreview, error} = usePreview(
+        true,
+        locale,
+        {
+            accessLevel: requestOptions.accessLevel || 0
+        },
+        slug
+    );
 
     let content: JSX.Element;
     let notification: JSX.Element | null = null;

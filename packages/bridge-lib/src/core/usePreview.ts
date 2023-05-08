@@ -1,5 +1,5 @@
 import {useEffect, useRef, useReducer, useState} from 'react';
-import {DocumentData, Data} from './types';
+import {DocumentData, Data, RequestOptions} from './types';
 import {fetchDataPreview} from '../preview/fetchDataPreview';
 import {PreviewBus} from '../preview/PreviewBus';
 
@@ -50,7 +50,7 @@ function reducer(state: PreviewState, action: PreviewStateAction): PreviewState 
     }
 }
 
-export const usePreview = (isPreview: boolean, locale: string, accessLevel: number, slug?: string): PreviewState => {
+export const usePreview = (isPreview: boolean, locale: string, requestOptions: RequestOptions, slug?: string): PreviewState => {
     const previewBusRef = useRef<PreviewBus>();
     const [previewBusChangesCounter, setPreviewBusChangesCounter] = useState<number>(0);
     const [previewState, dispatch] = useReducer(reducer, initialState);
@@ -68,7 +68,7 @@ export const usePreview = (isPreview: boolean, locale: string, accessLevel: numb
                     type: 'changeStatus',
                     newStatus: {status: 'loading'}
                 });
-                fetchDataPreview(changesData, previewConfig, accessLevel, locale, slug)
+                fetchDataPreview(changesData, previewConfig, requestOptions, locale, slug)
                     .then((dataPreview: Data) => {
                         dispatch({
                             type: 'changeAll',

@@ -3,7 +3,7 @@ import type {HeaderText} from './HeaderText';
 import type {ParagraphText} from './ParagraphText';
 import type {Link} from './Link';
 import type {StringValue} from './StringValue';
-import type {DocumentsList} from './DocumentsList';
+import type {DocumentsList, DocumentsListSelectionMode} from './DocumentsList';
 import type {Icon} from './Icon';
 import type {TagsList} from './TagsList';
 
@@ -32,6 +32,7 @@ export {
     Link,
     StringValue,
     DocumentsList,
+    DocumentsListSelectionMode,
     Icon,
     TagsList
 }

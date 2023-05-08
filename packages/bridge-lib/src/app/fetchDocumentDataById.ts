@@ -3,12 +3,18 @@ import {
     DocumentContent_Bean,
     SiteMap_Bean
 } from '@sitebud/domain-lib';
-import type {DocumentData} from '../core';
+import type {DocumentData, FetchOptions} from '../core';
 import {createDocumentData} from '../core/documentDataFactory';
 import {readDataFromFile} from './readDataFromFile';
-import {removeRestrictedBlocks} from '../core/documentDataUtility';
+import {removeRestrictedBlocks, filterAreas} from '../core/documentDataUtility';
 
-export async function fetchDocumentDataById(siteMap: SiteMap_Bean, documentId: string, accessLevel: number, locale?: string): Promise<DocumentData> {
+export async function fetchDocumentDataById(
+    siteMap: SiteMap_Bean,
+    documentId: string,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
+    locale?: string
+): Promise<DocumentData> {
     const validLocale: string = locale || siteMap.defaultLocale;
     let document: Document_Bean = await readDataFromFile<Document_Bean>(`data/documents/${documentId}.json`);
     if (!document) {
@@ -20,7 +26,11 @@ export async function fetchDocumentDataById(siteMap: SiteMap_Bean, documentId: s
     if (!documentContent) {
         throw Error(`Document "${documentId}" content for "${locale}" locale is not found.`);
     }
+    const {accessLevel, requiredDocumentAreas} = fetchOptions;
     if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
+        if (nestedLevel > 0) {
+            documentContent.documentAreas = filterAreas(documentContent.documentAreas, requiredDocumentAreas);
+        }
         documentContent.documentAreas = removeRestrictedBlocks(documentContent.documentAreas, accessLevel);
     }
     return await createDocumentData({

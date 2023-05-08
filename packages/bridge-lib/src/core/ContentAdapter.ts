@@ -13,7 +13,7 @@ import {
     StringValue,
     AnyFieldType
 } from '@sitebud/domain-lib';
-import {DocumentData, DataFieldValue} from './types';
+import {DocumentData, DataFieldValue, DocumentDataLink} from './types';
 import {TagsList} from '@sitebud/domain-lib/src';
 
 type AreasSpecification = Record<string, BlocksSpecification>;
@@ -68,15 +68,15 @@ export abstract class ContentAdapter<T> {
                         break;
                     case 'DocumentsList':
                         if (this._adaptDocumentDataCb) {
-                            const {documentsIds, selectionMode} = (fieldContent as DocumentsList);
+                            const {documentsIds, selectionMode, tags} = (fieldContent as DocumentsList);
                             const pageContentContextList: Array<any> = [];
                             if (documentsIds && documentsIds.length > 0) {
                                 if (selectionMode === 'selectChildrenDocuments') {
                                     for(const parentDocumentId of documentsIds) {
                                         if (parentDocumentId && this._documentData.documentDataListByParentId) {
-                                            const pageDataList: Array<DocumentData> | null = this._documentData.documentDataListByParentId[parentDocumentId];
-                                            if (pageDataList) {
-                                                for (const pageData of pageDataList) {
+                                            const pageDataLink: DocumentDataLink = this._documentData.documentDataListByParentId[parentDocumentId];
+                                            if (pageDataLink && pageDataLink.array) {
+                                                for (const pageData of pageDataLink.array) {
                                                     const adaptedContent: any = this._adaptDocumentDataCb(pageData);
                                                     if (adaptedContent) {
                                                         pageContentContextList.push(adaptedContent);
@@ -88,8 +88,22 @@ export abstract class ContentAdapter<T> {
                                 } else {
                                     for(const documentId of documentsIds) {
                                         if (documentId && this._documentData.documentDataById) {
-                                            const pageData: DocumentData | null = this._documentData.documentDataById[documentId];
-                                            if (pageData) {
+                                            const pageDataLink: DocumentDataLink = this._documentData.documentDataById[documentId];
+                                            if (pageDataLink && pageDataLink.item) {
+                                                const adaptedContent: any = this._adaptDocumentDataCb(pageDataLink.item);
+                                                if (adaptedContent) {
+                                                    pageContentContextList.push(adaptedContent);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (tags && tags.length > 0) {
+                                for(const tag of tags) {
+                                    if (tag && this._documentData.documentDataListByTag) {
+                                        const pageDataLink: DocumentDataLink = this._documentData.documentDataListByTag[tag];
+                                        if (pageDataLink && pageDataLink.array) {
+                                            for (const pageData of pageDataLink.array) {
                                                 const adaptedContent: any = this._adaptDocumentDataCb(pageData);
                                                 if (adaptedContent) {
                                                     pageContentContextList.push(adaptedContent);
@@ -109,9 +123,9 @@ export abstract class ContentAdapter<T> {
                             if (tags && tags.length > 0) {
                                 for(const tag of tags) {
                                     if (tag && this._documentData.documentDataListByTag) {
-                                        const pageDataList: Array<DocumentData> | null = this._documentData.documentDataListByTag[tag];
-                                        if (pageDataList) {
-                                            for (const pageData of pageDataList) {
+                                        const pageDataLink: DocumentDataLink = this._documentData.documentDataListByTag[tag];
+                                        if (pageDataLink && pageDataLink.array) {
+                                            for (const pageData of pageDataLink.array) {
                                                 const adaptedContent: any = this._adaptDocumentDataCb(pageData);
                                                 if (adaptedContent) {
                                                     pageContentContextList.push(adaptedContent);

@@ -1,7 +1,11 @@
+export type DocumentsListSelectionMode = 'selectChildrenDocuments' | 'selectDocuments' | 'selectTags';
+
 export type DocumentsList = {
-    selectionMode?: 'selectChildrenDocuments' | 'selectDocuments';
+    selectionMode: DocumentsListSelectionMode;
     documentsIds?: Array<string>;
+    tags?: Array<string>;
     isRequired?: boolean;
+    selectDocumentAreas?: Array<string>;
     allowedDocumentClasses?: Array<string>;
     itemsLimit?: number;
 };

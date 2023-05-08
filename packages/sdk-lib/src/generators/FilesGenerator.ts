@@ -1,6 +1,6 @@
 import path from 'path';
 import {DocumentClass, DocumentClass_Index} from '@sitebud/domain-lib';
-import {generateJsonFile, deleteDir} from './utilities';
+import {generateJsonFile, deleteDir} from '../utilities';
 import {DataContentAdapterGenerator} from './DataContentAdapterGenerator';
 import {AdaptersCommonsGenerator} from './AdaptersCommonsGenerator';
 

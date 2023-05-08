@@ -2,7 +2,7 @@ import {
     DocumentRecord_Bean,
     SiteMap_Bean,
 } from '@sitebud/domain-lib';
-import {DocumentData} from '../core';
+import {DocumentData, FetchOptions} from '../core';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 
 function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: string): DocumentRecord_Bean | undefined {
@@ -24,7 +24,12 @@ function findDocument(root: DocumentRecord_Bean, documentSlug: string, locale: s
     }
 }
 
-export async function fetchDocumentData(siteMap: SiteMap_Bean, accessLevel: number, locale?: string, documentSlug?: string): Promise<DocumentData> {
+export async function fetchDocumentData(
+    siteMap: SiteMap_Bean,
+    fetchOptions: FetchOptions,
+    locale?: string,
+    documentSlug?: string
+): Promise<DocumentData> {
     let foundDocument: DocumentRecord_Bean | undefined;
     if (documentSlug) {
         foundDocument = findDocument(siteMap.root, documentSlug, locale || siteMap.defaultLocale);
@@ -37,5 +42,5 @@ export async function fetchDocumentData(siteMap: SiteMap_Bean, accessLevel: numb
     if (!foundDocument) {
         throw Error('Document is not found');
     }
-    return await fetchDocumentDataById(siteMap, foundDocument.id, accessLevel, locale);
+    return await fetchDocumentDataById(siteMap, foundDocument.id, fetchOptions, 0, locale);
 }

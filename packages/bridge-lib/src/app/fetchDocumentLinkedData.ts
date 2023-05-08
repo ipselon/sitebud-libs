@@ -1,6 +1,6 @@
 import {SiteMap_Bean} from '@sitebud/domain-lib';
 import {enhanceDocumentData} from '../core/documentDataFactory';
-import {DocumentData} from '../core/types';
+import {DocumentData, FetchOptions} from '../core/types';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
@@ -8,65 +8,97 @@ import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
 export async function fetchLinkedData(
     documentData: DocumentData,
     siteMap: SiteMap_Bean,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
     locale: string | undefined,
-    level: number = 0
+    level: number = 1
 ): Promise<DocumentData> {
     const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
     if (documentDataListByParentId) {
-        const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};
-        for (const parentId of Object.keys(documentDataListByParentId)) {
-            const childrenDocumentData: Array<DocumentData> = await fetchDocumentsDataByParentId(siteMap, parentId, accessLevel, locale);
+        for (const parentDataLink of Object.entries(documentDataListByParentId)) {
+            const childrenDocumentData: Array<DocumentData> = await fetchDocumentsDataByParentId(
+                siteMap,
+                parentDataLink[0],
+                {...fetchOptions, requiredDocumentAreas: parentDataLink[1].options.documentAreas},
+                level,
+                locale
+            );
             if (childrenDocumentData.length > 0) {
-                newPageDataListByParentIdMap[parentId] = [];
+                const fetchedDataList: Array<DocumentData> = [];
                 for (const childDocumentData of childrenDocumentData) {
-                    if (level < 1) {
+                    if (level < 2) {
                         // go to recursion
-                        const withLinkedData: DocumentData = await fetchLinkedData(childDocumentData, siteMap, accessLevel, locale, level + 1);
-                        newPageDataListByParentIdMap[parentId].push(withLinkedData);
+                        const withLinkedData: DocumentData = await fetchLinkedData(
+                            childDocumentData,
+                            siteMap,
+                            fetchOptions,
+                            locale,
+                            level + 1
+                        );
+                        fetchedDataList.push(withLinkedData);
                     } else {
-                        newPageDataListByParentIdMap[parentId].push(childDocumentData);
+                        fetchedDataList.push(childDocumentData);
                     }
                 }
+                parentDataLink[1].array = fetchedDataList;
             }
         }
-        documentData.documentDataListByParentId = newPageDataListByParentIdMap;
     }
     if (documentDataById) {
-        const newPageDataByIdMap: Record<string, DocumentData> = {};
-        for (const documentId of Object.keys(documentDataById)) {
+        for (const dataLink of Object.entries(documentDataById)) {
             try {
-                const fetchedDocumentData: DocumentData = await fetchDocumentDataById(siteMap, documentId, accessLevel, locale);
-                if (level < 1) {
+                const fetchedDocumentData: DocumentData = await fetchDocumentDataById(
+                    siteMap,
+                    dataLink[0],
+                    {...fetchOptions, requiredDocumentAreas: dataLink[1].options.documentAreas},
+                    level,
+                    locale
+                );
+                if (level < 2) {
                     // go to recursion
-                    newPageDataByIdMap[documentId] = await fetchLinkedData(fetchedDocumentData, siteMap, accessLevel, locale, level + 1);
+                    dataLink[1].item = await fetchLinkedData(
+                        fetchedDocumentData,
+                        siteMap,
+                        fetchOptions,
+                        locale,
+                        level + 1
+                    );
                 } else {
-                    newPageDataByIdMap[documentId] = fetchedDocumentData;
+                    dataLink[1].item = fetchedDocumentData;
                 }
             } catch (e: any) {
                 console.error(`[SiteBub CMS] ${e.message}`);
             }
         }
-        documentData.documentDataById = newPageDataByIdMap;
     }
     if (documentDataListByTag) {
-        const newPageDataListByTagMap: Record<string, Array<DocumentData>> = {};
-        for (const tag of Object.keys(documentDataListByTag)) {
-            const taggedDocumentsData: Array<DocumentData> = await fetchDocumentsDataByTag(siteMap, tag, accessLevel, locale);
+        for (const tagDataLink of Object.entries(documentDataListByTag)) {
+            const taggedDocumentsData: Array<DocumentData> = await fetchDocumentsDataByTag(
+                siteMap,
+                tagDataLink[0],
+                {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
+                level,
+                locale
+            );
             if (taggedDocumentsData.length > 0) {
-                newPageDataListByTagMap[tag] = [];
+                const fetchedDataList: Array<DocumentData> = [];
                 for (const taggedDocumentData of taggedDocumentsData) {
-                    if (level < 1) {
+                    if (level < 2) {
                         // go to recursion
-                        const withLinkedData: DocumentData = await fetchLinkedData(taggedDocumentData, siteMap, accessLevel, locale, level + 1);
-                        newPageDataListByTagMap[tag].push(withLinkedData);
+                        const withLinkedData: DocumentData = await fetchLinkedData(
+                            taggedDocumentData,
+                            siteMap,
+                            fetchOptions,
+                            locale,
+                            level + 1
+                        );
+                        fetchedDataList.push(withLinkedData);
                     } else {
-                        newPageDataListByTagMap[tag].push(taggedDocumentData);
+                        fetchedDataList.push(taggedDocumentData);
                     }
                 }
+                tagDataLink[1].array = fetchedDataList;
             }
         }
-        documentData.documentDataListByTag = newPageDataListByTagMap;
     }
     return enhanceDocumentData(documentData, siteMap, locale);
 }

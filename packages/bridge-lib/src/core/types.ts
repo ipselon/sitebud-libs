@@ -31,6 +31,16 @@ export type DataFieldValue = {
 
 export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
 
+export type DocumentDataLinkOptions = {
+    documentAreas: Array<string>;
+};
+
+export type DocumentDataLink = {
+    options: DocumentDataLinkOptions;
+    array?: Array<DocumentData>;
+    item?: DocumentData;
+};
+
 export type DocumentData = {
     id?: string;
     name?: string;
@@ -41,9 +51,9 @@ export type DocumentData = {
     hasRestrictedAreas?: boolean;
     tagsLinks?: Record<string, string>;
     availableLocales?: Array<string>;
-    documentDataListByTag?: Record<string, Array<DocumentData> | null>;
-    documentDataListByParentId?: Record<string, Array<DocumentData> | null>;
-    documentDataById?: Record<string, DocumentData | null>;
+    documentDataListByTag?: Record<string, DocumentDataLink>;
+    documentDataListByParentId?: Record<string, DocumentDataLink>;
+    documentDataById?: Record<string, DocumentDataLink>;
     authorProfiles?: Record<string, DocumentData>;
 };
 
@@ -86,3 +96,12 @@ export type SearchIndexItem = {
     title: string;
     chunks: Array<string>;
 }
+
+export type RequestOptions = {
+    accessLevel: number;
+};
+
+export type FetchOptions = RequestOptions & {
+    requiredDocumentAreas?: Array<string>;
+};
+

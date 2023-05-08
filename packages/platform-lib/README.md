@@ -1,2 +1,0 @@
-# SiteBud domain library
-

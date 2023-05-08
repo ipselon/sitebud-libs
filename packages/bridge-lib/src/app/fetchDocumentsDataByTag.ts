@@ -4,10 +4,16 @@ import {
     getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
-import {DocumentData} from '../core';
+import {DocumentData, FetchOptions} from '../core';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 
-export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string, accessLevel: number, locale?: string): Promise<Array<DocumentData>> {
+export async function fetchDocumentsDataByTag(
+    siteMap: SiteMap_Bean,
+    tag: string,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
+    locale?: string
+): Promise<Array<DocumentData>> {
     const resultList: Array<DocumentData> = [];
     if (locale) {
         const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
@@ -17,7 +23,7 @@ export async function fetchDocumentsDataByTag(siteMap: SiteMap_Bean, tag: string
         if (foundDocumentRecords && foundDocumentRecords.length > 0) {
             for (const documentItem of foundDocumentRecords) {
                 try {
-                    resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, accessLevel, locale));
+                    resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
                 } catch (e: any) {
                     console.error(`[SiteBub CMS] ${e.message}`);
                 }

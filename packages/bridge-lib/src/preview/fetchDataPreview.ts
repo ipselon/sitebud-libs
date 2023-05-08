@@ -8,8 +8,8 @@ import {
     DocumentContent_Base
 } from '@sitebud/domain-lib';
 import {createDocumentData, enhanceDocumentData} from '../core/documentDataFactory';
-import type {DocumentData, Data} from '../core/types';
-import {removeRestrictedBlocks} from '../core/documentDataUtility';
+import type {DocumentData, Data, RequestOptions, FetchOptions} from '../core/types';
+import {removeRestrictedBlocks, filterAreas} from '../core/documentDataUtility';
 import {setImageResolver} from '../core/imageResolver';
 import {
     getBranch,
@@ -174,13 +174,18 @@ async function fetchDocumentDataById(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
     documentId: string,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
     locale: string
 ): Promise<DocumentData> {
     let result: DocumentData = {};
     const ownerLogin: string | undefined = previewConfig.owner;
     const repoName: string = previewConfig.repo;
-    let document: Document_Bean | undefined = getChanges(`${ownerLogin}/${repoName}__documents__${documentId}`);
+    let document: Document_Bean | undefined;
+    const memCacheDocument: Document_Bean | undefined = getChanges(`${ownerLogin}/${repoName}__documents__${documentId}`);
+    if (memCacheDocument) {
+        document = JSON.parse(JSON.stringify(memCacheDocument));
+    }
     if (!document) {
         document = await fetchDataFromBranch<Document_Bean>(`data/documents/${documentId}.json`, previewConfig);
     }
@@ -194,7 +199,11 @@ async function fetchDocumentDataById(
         if (!documentContent) {
             throw Error('Page content is not found.');
         }
+        const {accessLevel, requiredDocumentAreas} = fetchOptions;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
+            if (nestedLevel > 0) {
+                documentContent.documentAreas = filterAreas(documentContent.documentAreas, requiredDocumentAreas);
+            }
             documentContent.documentAreas = removeRestrictedBlocks(documentContent.documentAreas, accessLevel);
         }
         result = await createDocumentData({
@@ -212,7 +221,8 @@ async function fetchDocumentDataById(
 async function fetchDocumentDataBySlug(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
     locale: string,
     documentSlug?: string
 ): Promise<DocumentData> {
@@ -227,7 +237,7 @@ async function fetchDocumentDataBySlug(
         foundDocument = siteMap.root.children.find(i => i.type === 'main_page' && i.contents[locale]);
     }
     if (foundDocument) {
-        result = await fetchDocumentDataById(previewConfig, siteMap, foundDocument.id, accessLevel, locale);
+        result = await fetchDocumentDataById(previewConfig, siteMap, foundDocument.id, fetchOptions, nestedLevel, locale);
     }
     return result;
 }
@@ -235,7 +245,8 @@ async function fetchDocumentDataBySlug(
 async function fetchDocumentsDataByParentId(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
     parentDocumentId: string,
     locale: string
 ): Promise<Array<DocumentData>> {
@@ -244,7 +255,7 @@ async function fetchDocumentsDataByParentId(
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
         for (const documentItem of foundParentDocumentRecord.children) {
             try {
-                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, accessLevel, locale));
+                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
             } catch (e) {
                 // do nothing...
             }
@@ -256,7 +267,8 @@ async function fetchDocumentsDataByParentId(
 async function fetchDocumentsDataByTag(
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
+    nestedLevel: number,
     tag: string,
     locale: string
 ): Promise<Array<DocumentData>> {
@@ -268,7 +280,7 @@ async function fetchDocumentsDataByTag(
     if (foundDocumentRecords && foundDocumentRecords.length > 0) {
         for (const documentItem of foundDocumentRecords) {
             try {
-                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, accessLevel, locale));
+                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
             } catch (e) {
                 // do nothing
             }
@@ -291,82 +303,129 @@ async function fetchSiteMap(previewConfig: PreviewConfig): Promise<SiteMap_Bean>
 }
 
 async function fetchDocumentLinkedData(
-    result: DocumentData,
+    documentData: DocumentData,
     previewConfig: PreviewConfig,
     siteMap: SiteMap_Bean,
-    accessLevel: number,
+    fetchOptions: FetchOptions,
     locale: string,
-    level: number = 0
+    level: number = 1
 ): Promise<DocumentData> {
-    if (result.documentDataListByParentId) {
-        const newPageDataListByParentIdMap: Record<string, Array<DocumentData>> = {};
-        for (const parentId of Object.keys(result.documentDataListByParentId)) {
+    const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
+    if (documentDataListByParentId) {
+        for (const parentDataLink of Object.entries(documentDataListByParentId)) {
             const childrenDocumentData: Array<DocumentData> =
-                await fetchDocumentsDataByParentId(previewConfig, siteMap, accessLevel, parentId, locale);
+                await fetchDocumentsDataByParentId(
+                    previewConfig,
+                    siteMap,
+                    {...fetchOptions, requiredDocumentAreas: parentDataLink[1].options.documentAreas},
+                    level,
+                    parentDataLink[0],
+                    locale
+                );
             if (childrenDocumentData.length > 0) {
-                newPageDataListByParentIdMap[parentId] = [];
+                const fetchedDataList: Array<DocumentData> = [];
                 for (const childDocumentData of childrenDocumentData) {
                     if (childDocumentData && childDocumentData.content) {
-                        if (level < 1) {
-                            const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(childDocumentData, previewConfig, siteMap, accessLevel, locale, level + 1);
-                            newPageDataListByParentIdMap[parentId].push(documentWithLinkedData);
+                        if (level < 2) {
+                            const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
+                                childDocumentData,
+                                previewConfig,
+                                siteMap,
+                                fetchOptions,
+                                locale,
+                                level + 1
+                            );
+                            fetchedDataList.push(documentWithLinkedData);
                         } else {
-                            newPageDataListByParentIdMap[parentId].push(childDocumentData);
+                            fetchedDataList.push(childDocumentData);
                         }
                     }
                 }
+                parentDataLink[1].array = fetchedDataList;
             }
         }
-        result.documentDataListByParentId = newPageDataListByParentIdMap;
     }
-    if (result.documentDataById) {
-        const newPageDataByIdMap: Record<string, DocumentData> = {};
-        for (const documentId of Object.keys(result.documentDataById)) {
+    if (documentDataById) {
+        for (const dataLink of Object.entries(documentDataById)) {
             try {
-                let documentData: DocumentData =
-                    await fetchDocumentDataById(previewConfig, siteMap, documentId, accessLevel, locale);
+                let documentData: DocumentData = await fetchDocumentDataById(
+                    previewConfig,
+                    siteMap,
+                    dataLink[0],
+                    {...fetchOptions, requiredDocumentAreas: dataLink[1].options.documentAreas},
+                    level,
+                    locale
+                );
                 if (documentData && documentData.content) {
-                    if (level < 1) {
-                        documentData = await fetchDocumentLinkedData(documentData, previewConfig, siteMap, accessLevel, locale, level + 1);
+                    if (level < 2) {
+                        documentData = await fetchDocumentLinkedData(documentData, previewConfig, siteMap, fetchOptions, locale, level + 1);
                     }
-                    newPageDataByIdMap[documentId] = documentData;
+                    dataLink[1].item = documentData;
                 }
             } catch (e) {
                 // do nothing...
             }
         }
-        result.documentDataById = newPageDataByIdMap;
     }
-    if (result.documentDataListByTag) {
-        const newPageDataListByTagMap: Record<string, Array<DocumentData>> = {};
-        for (const tag of Object.keys(result.documentDataListByTag)) {
-            const tagsDocumentData: Array<DocumentData> =
-                await fetchDocumentsDataByTag(previewConfig, siteMap, accessLevel, tag, locale);
+    if (documentDataListByTag) {
+        for (const tagDataLink of Object.entries(documentDataListByTag)) {
+            const tagsDocumentData: Array<DocumentData> = await fetchDocumentsDataByTag(
+                previewConfig,
+                siteMap,
+                {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
+                level,
+                tagDataLink[0],
+                locale
+            );
             if (tagsDocumentData.length > 0) {
-                newPageDataListByTagMap[tag] = [];
+                const fetchedDataList: Array<DocumentData> = [];
                 for (const tagDocumentData of tagsDocumentData) {
                     if (tagDocumentData && tagDocumentData.content) {
-                        if (level < 1) {
-                            const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(tagDocumentData, previewConfig, siteMap, accessLevel, locale, level + 1);
-                            newPageDataListByTagMap[tag].push(documentWithLinkedData);
+                        if (level < 2) {
+                            const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
+                                tagDocumentData,
+                                previewConfig,
+                                siteMap,
+                                fetchOptions,
+                                locale,
+                                level + 1
+                            );
+                            fetchedDataList.push(documentWithLinkedData);
                         } else {
-                            newPageDataListByTagMap[tag].push(tagDocumentData);
+                            fetchedDataList.push(tagDocumentData);
                         }
                     }
                 }
+                tagDataLink[1].array = fetchedDataList;
             }
         }
-        result.documentDataListByTag = newPageDataListByTagMap;
     }
-    return enhanceDocumentData(result, siteMap, locale);
+    return enhanceDocumentData(documentData, siteMap, locale);
 }
 
-async function fetchDocumentData(previewConfig: PreviewConfig, siteMap: SiteMap_Bean, accessLevel: number, locale: string, slug?: string): Promise<DocumentData> {
-    const result: DocumentData = await fetchDocumentDataBySlug(previewConfig, siteMap, accessLevel, locale, slug);
-    return await fetchDocumentLinkedData(result, previewConfig, siteMap, accessLevel, locale);
+async function fetchDocumentData(
+    previewConfig: PreviewConfig,
+    siteMap: SiteMap_Bean,
+    fetchOptions: FetchOptions,
+    locale: string,
+    slug?: string
+): Promise<DocumentData> {
+    const result: DocumentData = await fetchDocumentDataBySlug(
+        previewConfig,
+        siteMap,
+        fetchOptions,
+        0,
+        locale,
+        slug
+    );
+    return await fetchDocumentLinkedData(result, previewConfig, siteMap, fetchOptions, locale);
 }
 
-export async function fetchFileData(previewConfig: PreviewConfig, filePath: string, noCache: boolean = false): Promise<FileDataFetchingStatus> {
+export async function fetchFileData(
+    previewConfig: PreviewConfig,
+    filePath: string,
+    noCache: boolean = false
+): Promise<FileDataFetchingStatus> {
     try {
         const fileContent: string = await fetchStringFromBranch(filePath, previewConfig, noCache);
         return {
@@ -380,17 +439,34 @@ export async function fetchFileData(previewConfig: PreviewConfig, filePath: stri
     }
 }
 
-export async function fetchImageData(previewConfig: PreviewConfig, filePath: string, noCache: boolean = false): Promise<string> {
+export async function fetchImageData(
+    previewConfig: PreviewConfig,
+    filePath: string,
+    noCache: boolean = false
+): Promise<string> {
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
 
-export async function fetchExtraData(documentData: DocumentData, previewConfig: PreviewConfig, siteMap: SiteMap_Bean, accessLevel: number, locale: string): Promise<DocumentData> {
+export async function fetchExtraData(
+    documentData: DocumentData,
+    previewConfig: PreviewConfig,
+    siteMap: SiteMap_Bean,
+    fetchOptions: FetchOptions,
+    locale: string
+): Promise<DocumentData> {
     documentData.authorProfiles = {};
     if (siteMap.authorsDocumentIds) {
         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
         if (localeAuthorDocumentIds) {
             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-                const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(previewConfig, siteMap, authorDocumentId[1], accessLevel, locale);
+                const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(
+                    previewConfig,
+                    siteMap,
+                    authorDocumentId[1],
+                    {...fetchOptions, requiredDocumentAreas: ['*']},
+                    1,
+                    locale
+                );
                 documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorProfileDocumentData, siteMap, locale);
             }
         }
@@ -398,7 +474,13 @@ export async function fetchExtraData(documentData: DocumentData, previewConfig: 
     return documentData;
 }
 
-export async function fetchDataPreview(changesData: any, previewConfig: PreviewConfig, accessLevel: number, locale: string, slug?: string): Promise<Data> {
+export async function fetchDataPreview(
+    changesData: any,
+    previewConfig: PreviewConfig,
+    requestOptions: RequestOptions,
+    locale: string,
+    slug?: string
+): Promise<Data> {
     setChangesBulk(changesData);
     setImageResolver(async (imgSrc?: string | null) => {
         if (imgSrc && imgSrc.startsWith("/_assets/images")) {
@@ -406,10 +488,11 @@ export async function fetchDataPreview(changesData: any, previewConfig: PreviewC
         }
         return imgSrc || '';
     });
+    const fetchOptions: FetchOptions = {...requestOptions};
     const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
-    const pageData: DocumentData = await fetchDocumentData(previewConfig, siteMap, accessLevel, locale, slug);
-    let siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, accessLevel, locale, '@site');
-    siteData = await fetchExtraData(siteData, previewConfig, siteMap, accessLevel, locale);
+    const pageData: DocumentData = await fetchDocumentData(previewConfig, siteMap, fetchOptions, locale, slug);
+    let siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, fetchOptions, locale, '@site');
+    siteData = await fetchExtraData(siteData, previewConfig, siteMap, fetchOptions, locale);
     return {
         pageData,
         siteData
