@@ -45,3 +45,29 @@ export function filterAreas(
         return [];
     }
 }
+
+export function clearIds(
+    areas: Array<DocumentContentArea>,
+): Array<DocumentContentArea> {
+    for (const documentArea of areas) {
+        if (documentArea.blocks && documentArea.blocks.length > 0) {
+            for (const documentContentBlock of documentArea.blocks) {
+                if (documentContentBlock.id) {
+                    delete documentContentBlock.id;
+                }
+                if (documentContentBlock.components && documentContentBlock.components.length > 0) {
+                    for (const documentContentBlockComponent of documentContentBlock.components) {
+                        if (documentContentBlockComponent.instances && documentContentBlockComponent.instances.length > 0) {
+                            for (const instance of documentContentBlockComponent.instances) {
+                                if (instance.id) {
+                                    delete instance.id;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return areas;
+}

@@ -6,7 +6,7 @@ import {
 import type {DocumentData, FetchOptions} from '../core';
 import {createDocumentData} from '../core/documentDataFactory';
 import {readDataFromFile} from './readDataFromFile';
-import {removeRestrictedBlocks, filterAreas} from '../core/documentDataUtility';
+import {removeRestrictedBlocks, filterAreas, clearIds} from '../core/documentDataUtility';
 
 export async function fetchDocumentDataById(
     siteMap: SiteMap_Bean,
@@ -32,6 +32,7 @@ export async function fetchDocumentDataById(
             documentContent.documentAreas = filterAreas(documentContent.documentAreas, requiredDocumentAreas);
         }
         documentContent.documentAreas = removeRestrictedBlocks(documentContent.documentAreas, accessLevel);
+        documentContent.documentAreas = clearIds(documentContent.documentAreas);
     }
     return await createDocumentData({
         locale: validLocale,
