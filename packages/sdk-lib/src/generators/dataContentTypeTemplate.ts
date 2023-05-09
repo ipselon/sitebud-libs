@@ -67,6 +67,7 @@ export type <%= upperFirst(className) %>Content = {
     <% if (documentType !== 'site') {%>path: string;<% } %>
     <% if (documentType !== 'site') {%>locale?: string;<% } %>
     hasRestrictedAreas?: boolean;
+    baseUrl: string;
     <% if (documentType === 'site') {%>availableLocales: Array<string>;<% } %>
     <% if (documentType === 'site') {%>tagsLinks: Record<string, string>;<% } %>
     <% if (documentType === 'site') {%>authorProfiles: Record<string, DocumentContentContext>;<% } %>

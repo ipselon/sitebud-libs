@@ -4,7 +4,7 @@ import {<%= upperFirst(className) %>Content,<% if (documentAreasNames && documen
 
 export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content, hasRestrictedAreas<% if (documentType !== 'site') {%>, path, locale<% } %><% if (documentType === 'site') {%>, tagsLinks, availableLocales<% } %>} = this._documentData;
+        const {content, hasRestrictedAreas, baseUrl<% if (documentType !== 'site') {%>, path, locale<% } %><% if (documentType === 'site') {%>, tagsLinks, availableLocales<% } %>} = this._documentData;
         const result: <%= upperFirst(className) %>Content = {
             <% if (documentType !== 'site') {%>title: content?.title || 'undefined',<% } %>
             <% if (documentType !== 'site') {%>slug: content?.slug || 'undefined',<% } %>
@@ -14,6 +14,7 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             <% if (documentType !== 'site') {%>path: path || '',<% } %>
             <% if (documentType !== 'site') {%>locale,<% } %>
             hasRestrictedAreas,
+            baseUrl: baseUrl || '',
             <% if (documentType === 'site') {%>availableLocales: availableLocales || [],<% } %>
             <% if (documentType === 'site') {%>tagsLinks: tagsLinks || {},<% } %>
             <% if (documentType === 'site') {%>authorProfiles: {},<% } %>

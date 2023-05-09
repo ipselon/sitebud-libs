@@ -46,6 +46,7 @@ export type DocumentData = {
     name?: string;
     type?: DocumentType;
     content?: DocumentContent;
+    baseUrl?: string;
     path?: string;
     locale?: string;
     hasRestrictedAreas?: boolean;

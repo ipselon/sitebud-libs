@@ -11,6 +11,8 @@ import {DocumentData, DocumentContext, SiteMap_Index} from './types';
 import {imageResolverInstance} from './imageResolver';
 import {isRestrictedBlock} from './documentDataUtility';
 
+const BASE_URL: string | undefined = process.env.SB_WEBSITE_BASE_URL;
+
 export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
     let localResult: Record<string, boolean> = {};
     Object.keys(root.contents).forEach(locale => {
@@ -169,6 +171,7 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
         newDocumentData.locale = locale;
         newDocumentData.name = documentClass;
         newDocumentData.type = documentType;
+        newDocumentData.baseUrl = BASE_URL;
         newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     }
     return newDocumentData;

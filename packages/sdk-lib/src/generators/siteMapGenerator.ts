@@ -64,21 +64,21 @@ export function makeSiteIndex(
 
 
 
-const URL_BASE: string | undefined = process.env.SB_WEBSITE_URL_BASE;
+const BASE_URL: string | undefined = process.env.SB_WEBSITE_BASE_URL;
 
-const siteMapXMLWrapperTemplate = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><% for (const siteIndexRecord of Object.entries(siteIndex)) { %><% if (siteIndexRecord[1].includeInSiteMap) { %><url><loc><%= URL_BASE %><%= siteIndexRecord[1].nodePath %></loc><% for (const byLocaleItem of Object.entries(siteIndexRecord[1].byLocale)) { %><% if (byLocaleItem[1].includeInSiteMap) { %><xhtml:link rel="alternate" hreflang="<%= byLocaleItem[0] %>" href="<%= URL_BASE %>/<%= byLocaleItem[0] %><%= byLocaleItem[1].nodePath %>"/><% } %><% } %></url><% } %><% } %></urlset>
+const siteMapXMLWrapperTemplate = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><% for (const siteIndexRecord of Object.entries(siteIndex)) { %><% if (siteIndexRecord[1].includeInSiteMap) { %><url><loc><%= BASE_URL %><%= siteIndexRecord[1].nodePath %></loc><% for (const byLocaleItem of Object.entries(siteIndexRecord[1].byLocale)) { %><% if (byLocaleItem[1].includeInSiteMap) { %><xhtml:link rel="alternate" hreflang="<%= byLocaleItem[0] %>" href="<%= BASE_URL %>/<%= byLocaleItem[0] %><%= byLocaleItem[1].nodePath %>"/><% } %><% } %></url><% } %><% } %></urlset>
 `;
 
 export async function generateSiteMapXML(): Promise<void> {
-    if (!URL_BASE) {
-        console.error('[SiteBud CMS] Error generating sitemap.xml file: missing SB_WEBSITE_URL_BASE environment variable. Please read the documentation about Sitemap automatic generation on SiteBud CMS website.');
+    if (!BASE_URL) {
+        console.error('[SiteBud CMS] Error generating sitemap.xml file: missing SB_WEBSITE_BASE_URL environment variable. Please read the documentation about Sitemap automatic generation on SiteBud CMS website.');
         return;
     }
     try {
         const siteMapFilePath = path.join(process.cwd(), 'data/siteMap.json');
         const siteMap = await fs.readJSON(siteMapFilePath);
         const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, siteMap.defaultLocale);
-        const fileBody: string = template(siteMapXMLWrapperTemplate)({URL_BASE, siteIndex});
+        const fileBody: string = template(siteMapXMLWrapperTemplate)({BASE_URL, siteIndex});
         const siteMapXMLFilePath = path.join(process.cwd(), 'public/sitemap.xml');
         await fs.ensureFile(siteMapXMLFilePath);
         await fs.outputFile(siteMapXMLFilePath, fileBody);
