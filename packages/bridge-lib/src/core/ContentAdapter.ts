@@ -50,8 +50,8 @@ export abstract class ContentAdapter<T> {
                         result[name] = {
                             src: (fieldContent as Image).src,
                             alt: (fieldContent as Image).alt,
-                            height: (fieldContent as Image).height,
-                            width: (fieldContent as Image).width,
+                            focusX: (fieldContent as Image).focusX,
+                            focusY: (fieldContent as Image).focusY,
                         };
                         break;
                     case 'HeaderText':
