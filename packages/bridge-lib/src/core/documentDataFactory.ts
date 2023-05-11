@@ -157,6 +157,13 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
     const newDocumentData: DocumentData = {};
     if (documentContext) {
         const {documentClass, documentContent, locale, documentId, documentType} = documentContext;
+        if (documentContent.dataFields && documentContent.dataFields.length > 0) {
+            for(const dataField of documentContent.dataFields) {
+                if (dataField.type === 'string' && dataField.value && dataField.value.startsWith("/_assets/images")) {
+                    dataField.value = await imageResolverInstance(dataField.value);
+                }
+            }
+        }
         let restrictedAreasCount: number = 0;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {

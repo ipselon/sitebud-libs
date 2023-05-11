@@ -484,7 +484,11 @@ export async function fetchDataPreview(
     setChangesBulk(changesData);
     setImageResolver(async (imgSrc?: string | null) => {
         if (imgSrc && imgSrc.startsWith("/_assets/images")) {
-            return fetchImageData(previewConfig, `public${imgSrc}`);
+            try {
+                return fetchImageData(previewConfig, `public${imgSrc}`);
+            } catch (e) {
+                //
+            }
         }
         return imgSrc || '';
     });
