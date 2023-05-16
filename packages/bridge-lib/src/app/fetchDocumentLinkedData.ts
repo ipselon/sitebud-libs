@@ -3,7 +3,7 @@ import {enhanceDocumentData} from '../core/documentDataFactory';
 import {DocumentData, FetchOptions} from '../core/types';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
-import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
+// import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
 
 export async function fetchLinkedData(
     documentData: DocumentData,
@@ -12,20 +12,29 @@ export async function fetchLinkedData(
     locale: string | undefined,
     level: number = 1
 ): Promise<DocumentData> {
-    const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
+    const {
+        documentDataListByParentId,
+        documentDataById,
+        // documentDataListByTag
+    } = documentData;
     if (documentDataListByParentId) {
         for (const parentDataLink of Object.entries(documentDataListByParentId)) {
-            const childrenDocumentData: Array<DocumentData> = await fetchDocumentsDataByParentId(
+            const {parentReference, array} = await fetchDocumentsDataByParentId(
                 siteMap,
                 parentDataLink[0],
-                {...fetchOptions, requiredDocumentAreas: parentDataLink[1].options.documentAreas},
+                {
+                    ...fetchOptions,
+                    requiredDocumentAreas: parentDataLink[1].options.documentAreas,
+                    requiredDocumentClasses: parentDataLink[1].options.documentClasses
+                },
                 level,
                 locale
             );
-            if (childrenDocumentData.length > 0) {
+            parentDataLink[1].parentReference = parentReference;
+            if (array.length > 0) {
                 const fetchedDataList: Array<DocumentData> = [];
-                for (const childDocumentData of childrenDocumentData) {
-                    if (level < 2) {
+                for (const childDocumentData of array) {
+                    if (level < 2) { // todo: possible to be a library global parameter fetchingDepthLevel
                         // go to recursion
                         const withLinkedData: DocumentData = await fetchLinkedData(
                             childDocumentData,
@@ -49,7 +58,11 @@ export async function fetchLinkedData(
                 const fetchedDocumentData: DocumentData = await fetchDocumentDataById(
                     siteMap,
                     dataLink[0],
-                    {...fetchOptions, requiredDocumentAreas: dataLink[1].options.documentAreas},
+                    {
+                        ...fetchOptions,
+                        requiredDocumentAreas: dataLink[1].options.documentAreas,
+                        requiredDocumentClasses: dataLink[1].options.documentClasses
+                    },
                     level,
                     locale
                 );
@@ -70,35 +83,36 @@ export async function fetchLinkedData(
             }
         }
     }
-    if (documentDataListByTag) {
-        for (const tagDataLink of Object.entries(documentDataListByTag)) {
-            const taggedDocumentsData: Array<DocumentData> = await fetchDocumentsDataByTag(
-                siteMap,
-                tagDataLink[0],
-                {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
-                level,
-                locale
-            );
-            if (taggedDocumentsData.length > 0) {
-                const fetchedDataList: Array<DocumentData> = [];
-                for (const taggedDocumentData of taggedDocumentsData) {
-                    if (level < 2) {
-                        // go to recursion
-                        const withLinkedData: DocumentData = await fetchLinkedData(
-                            taggedDocumentData,
-                            siteMap,
-                            fetchOptions,
-                            locale,
-                            level + 1
-                        );
-                        fetchedDataList.push(withLinkedData);
-                    } else {
-                        fetchedDataList.push(taggedDocumentData);
-                    }
-                }
-                tagDataLink[1].array = fetchedDataList;
-            }
-        }
-    }
+    // if (documentDataListByTag) {
+    //     for (const tagDataLink of Object.entries(documentDataListByTag)) {
+    //         const {tagReference, array} = await fetchDocumentsDataByTag(
+    //             siteMap,
+    //             tagDataLink[0],
+    //             {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
+    //             level,
+    //             locale
+    //         );
+    //         tagDataLink[1].tagReference = tagReference;
+    //         if (array.length > 0) {
+    //             const fetchedDataList: Array<DocumentData> = [];
+    //             for (const taggedDocumentData of array) {
+    //                 if (level < 2) {
+    //                     // go to recursion
+    //                     const withLinkedData: DocumentData = await fetchLinkedData(
+    //                         taggedDocumentData,
+    //                         siteMap,
+    //                         fetchOptions,
+    //                         locale,
+    //                         level + 1
+    //                     );
+    //                     fetchedDataList.push(withLinkedData);
+    //                 } else {
+    //                     fetchedDataList.push(taggedDocumentData);
+    //                 }
+    //             }
+    //             tagDataLink[1].array = fetchedDataList;
+    //         }
+    //     }
+    // }
     return enhanceDocumentData(documentData, siteMap, locale);
 }

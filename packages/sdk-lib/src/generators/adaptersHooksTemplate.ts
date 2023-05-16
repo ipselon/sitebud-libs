@@ -34,16 +34,4 @@ export function useDocumentDataAdapter(data: Data): DocumentContentContext {
 export function useAdaptedContent(): DocumentContentContext {
     return useContext(DocumentContentContextInstance);
 }
-
-export function useLastAuthor(authors?: Record<string, number>): string | undefined {
-    let authorEmail: string | undefined;
-    if (authors) {
-        let authorEntries: Array<[string, number]> = Object.entries(authors);
-        if (authorEntries.length > 0) {
-            authorEntries = authorEntries.sort((a, b) => b[1] - a[1]);
-            authorEmail = authorEntries[0][0];
-        }
-    }
-    return authorEmail;
-}
 `;

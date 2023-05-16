@@ -4,11 +4,18 @@ import {
     Document_Bean,
     DocumentContent_Bean,
     findDocument,
-    getAllDocuments,
+    // getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
 import {createDocumentData, enhanceDocumentData} from '../core/documentDataFactory';
-import type {DocumentData, Data, RequestOptions, FetchOptions} from '../core/types';
+import type {
+    DocumentData,
+    Data,
+    RequestOptions,
+    FetchOptions,
+    FoundByParentReference,
+    // FoundByTagReference
+} from '../core/types';
 import {removeRestrictedBlocks, filterAreas} from '../core/documentDataUtility';
 import {setImageResolver} from '../core/imageResolver';
 import {
@@ -249,10 +256,19 @@ async function fetchDocumentsDataByParentId(
     nestedLevel: number,
     parentDocumentId: string,
     locale: string
-): Promise<Array<DocumentData>> {
+): Promise<{parentReference?: FoundByParentReference; array: Array<DocumentData>;}> {
     const resultList: Array<DocumentData> = [];
+    let parentReference: FoundByParentReference | undefined = undefined;
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
+        const foundDocumentContent: DocumentContent_Base | undefined = foundParentDocumentRecord.contents[locale];
+        if (foundDocumentContent) {
+            parentReference = {
+                id: foundParentDocumentRecord.id,
+                title: foundDocumentContent.title,
+                slug: foundDocumentContent.slug
+            }
+        }
         for (const documentItem of foundParentDocumentRecord.children) {
             try {
                 resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
@@ -261,33 +277,35 @@ async function fetchDocumentsDataByParentId(
             }
         }
     }
-    return resultList;
+    return {parentReference, array: resultList};
 }
 
-async function fetchDocumentsDataByTag(
-    previewConfig: PreviewConfig,
-    siteMap: SiteMap_Bean,
-    fetchOptions: FetchOptions,
-    nestedLevel: number,
-    tag: string,
-    locale: string
-): Promise<Array<DocumentData>> {
-    const resultList: Array<DocumentData> = [];
-    const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
-        const foundDocumentContent: DocumentContent_Base | undefined = documentRecord.contents[locale];
-        return !!foundDocumentContent && foundDocumentContent.tags[tag] >= 1;
-    });
-    if (foundDocumentRecords && foundDocumentRecords.length > 0) {
-        for (const documentItem of foundDocumentRecords) {
-            try {
-                resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
-            } catch (e) {
-                // do nothing
-            }
-        }
-    }
-    return resultList;
-}
+// async function fetchDocumentsDataByTag(
+//     previewConfig: PreviewConfig,
+//     siteMap: SiteMap_Bean,
+//     fetchOptions: FetchOptions,
+//     nestedLevel: number,
+//     tag: string,
+//     locale: string
+// ): Promise<{tagReference?: FoundByTagReference; array: Array<DocumentData>;}> {
+//     const resultList: Array<DocumentData> = [];
+//     let tagReference: FoundByTagReference | undefined = undefined;
+//     const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
+//         const foundDocumentContent: DocumentContent_Base | undefined = documentRecord.contents[locale];
+//         return !!foundDocumentContent && foundDocumentContent.tags[tag] >= 1;
+//     });
+//     tagReference = {name: tag};
+//     if (foundDocumentRecords && foundDocumentRecords.length > 0) {
+//         for (const documentItem of foundDocumentRecords) {
+//             try {
+//                 resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
+//             } catch (e) {
+//                 // do nothing
+//             }
+//         }
+//     }
+//     return {tagReference, array: resultList};
+// }
 
 async function fetchSiteMap(previewConfig: PreviewConfig): Promise<SiteMap_Bean> {
     const ownerLogin: string | undefined = previewConfig.owner;
@@ -310,10 +328,14 @@ async function fetchDocumentLinkedData(
     locale: string,
     level: number = 1
 ): Promise<DocumentData> {
-    const {documentDataListByParentId, documentDataById, documentDataListByTag} = documentData;
+    const {
+        documentDataListByParentId,
+        documentDataById,
+        // documentDataListByTag
+    } = documentData;
     if (documentDataListByParentId) {
         for (const parentDataLink of Object.entries(documentDataListByParentId)) {
-            const childrenDocumentData: Array<DocumentData> =
+            const {parentReference, array} =
                 await fetchDocumentsDataByParentId(
                     previewConfig,
                     siteMap,
@@ -322,9 +344,10 @@ async function fetchDocumentLinkedData(
                     parentDataLink[0],
                     locale
                 );
-            if (childrenDocumentData.length > 0) {
+            parentDataLink[1].parentReference = parentReference;
+            if (array.length > 0) {
                 const fetchedDataList: Array<DocumentData> = [];
-                for (const childDocumentData of childrenDocumentData) {
+                for (const childDocumentData of array) {
                     if (childDocumentData && childDocumentData.content) {
                         if (level < 2) {
                             const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
@@ -367,39 +390,40 @@ async function fetchDocumentLinkedData(
             }
         }
     }
-    if (documentDataListByTag) {
-        for (const tagDataLink of Object.entries(documentDataListByTag)) {
-            const tagsDocumentData: Array<DocumentData> = await fetchDocumentsDataByTag(
-                previewConfig,
-                siteMap,
-                {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
-                level,
-                tagDataLink[0],
-                locale
-            );
-            if (tagsDocumentData.length > 0) {
-                const fetchedDataList: Array<DocumentData> = [];
-                for (const tagDocumentData of tagsDocumentData) {
-                    if (tagDocumentData && tagDocumentData.content) {
-                        if (level < 2) {
-                            const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
-                                tagDocumentData,
-                                previewConfig,
-                                siteMap,
-                                fetchOptions,
-                                locale,
-                                level + 1
-                            );
-                            fetchedDataList.push(documentWithLinkedData);
-                        } else {
-                            fetchedDataList.push(tagDocumentData);
-                        }
-                    }
-                }
-                tagDataLink[1].array = fetchedDataList;
-            }
-        }
-    }
+    // if (documentDataListByTag) {
+    //     for (const tagDataLink of Object.entries(documentDataListByTag)) {
+    //         const {tagReference, array} = await fetchDocumentsDataByTag(
+    //             previewConfig,
+    //             siteMap,
+    //             {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
+    //             level,
+    //             tagDataLink[0],
+    //             locale
+    //         );
+    //         tagDataLink[1].tagReference = tagReference;
+    //         if (array.length > 0) {
+    //             const fetchedDataList: Array<DocumentData> = [];
+    //             for (const tagDocumentData of array) {
+    //                 if (tagDocumentData && tagDocumentData.content) {
+    //                     if (level < 2) {
+    //                         const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
+    //                             tagDocumentData,
+    //                             previewConfig,
+    //                             siteMap,
+    //                             fetchOptions,
+    //                             locale,
+    //                             level + 1
+    //                         );
+    //                         fetchedDataList.push(documentWithLinkedData);
+    //                     } else {
+    //                         fetchedDataList.push(tagDocumentData);
+    //                     }
+    //                 }
+    //             }
+    //             tagDataLink[1].array = fetchedDataList;
+    //         }
+    //     }
+    // }
     return enhanceDocumentData(documentData, siteMap, locale);
 }
 
@@ -447,32 +471,32 @@ export async function fetchImageData(
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
 
-export async function fetchExtraData(
-    documentData: DocumentData,
-    previewConfig: PreviewConfig,
-    siteMap: SiteMap_Bean,
-    fetchOptions: FetchOptions,
-    locale: string
-): Promise<DocumentData> {
-    documentData.authorProfiles = {};
-    if (siteMap.authorsDocumentIds) {
-        const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
-        if (localeAuthorDocumentIds) {
-            for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-                const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(
-                    previewConfig,
-                    siteMap,
-                    authorDocumentId[1],
-                    {...fetchOptions, requiredDocumentAreas: ['*']},
-                    1,
-                    locale
-                );
-                documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorProfileDocumentData, siteMap, locale);
-            }
-        }
-    }
-    return documentData;
-}
+// export async function fetchExtraData(
+//     documentData: DocumentData,
+//     previewConfig: PreviewConfig,
+//     siteMap: SiteMap_Bean,
+//     fetchOptions: FetchOptions,
+//     locale: string
+// ): Promise<DocumentData> {
+//     documentData.authorProfiles = {};
+//     if (siteMap.authorsDocumentIds) {
+//         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
+//         if (localeAuthorDocumentIds) {
+//             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
+//                 const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(
+//                     previewConfig,
+//                     siteMap,
+//                     authorDocumentId[1],
+//                     {...fetchOptions, requiredDocumentAreas: ['*']},
+//                     1,
+//                     locale
+//                 );
+//                 documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorProfileDocumentData, siteMap, locale);
+//             }
+//         }
+//     }
+//     return documentData;
+// }
 
 export async function fetchDataPreview(
     changesData: any,
@@ -496,7 +520,7 @@ export async function fetchDataPreview(
     const siteMap: SiteMap_Bean = await fetchSiteMap(previewConfig);
     const pageData: DocumentData = await fetchDocumentData(previewConfig, siteMap, fetchOptions, locale, slug);
     let siteData: DocumentData = await fetchDocumentData(previewConfig, siteMap, fetchOptions, locale, '@site');
-    siteData = await fetchExtraData(siteData, previewConfig, siteMap, fetchOptions, locale);
+    // siteData = await fetchExtraData(siteData, previewConfig, siteMap, fetchOptions, locale);
     return {
         pageData,
         siteData
@@ -519,6 +543,4 @@ export async function cleanDataCache(previewConfig: PreviewConfig): Promise<void
         branchDataStatus.status = 'error';
         throw Error(`Can not read the ${workingBranch} working branch data. ${e.message}`);
     }
-
-
 }

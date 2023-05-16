@@ -67,7 +67,7 @@ export type DocumentClass = {
     description: string;
     defaultTitle?: string;
     defaultSlug?: string;
-    dataFields: Record<string, DocumentContentDataFieldClass>;
+    dataFields?: Record<string, DocumentContentDataFieldClass>;
     documentAreas: Record<string, DocumentContentAreaClass>;
 };
 

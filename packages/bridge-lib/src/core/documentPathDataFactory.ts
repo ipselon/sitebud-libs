@@ -1,5 +1,5 @@
 import {DocumentRecord_Bean, DocumentContent_Base, SiteMap_Bean} from '@sitebud/domain-lib';
-import {DocumentPathData, SiteMapDataContext_Proxy} from './types';
+import {DocumentPathData} from './types';
 
 function traverseTree(root: DocumentRecord_Bean, prevPathDataMap: Record<string, DocumentPathData> = {}): Array<DocumentPathData> {
     let accumulatorLocal: Array<DocumentPathData> = [];

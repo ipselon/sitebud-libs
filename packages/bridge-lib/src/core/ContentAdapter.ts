@@ -7,14 +7,17 @@ import {
     ParagraphText,
     Link,
     DocumentsList,
-    DocumentContentDataField,
+    // DocumentContentDataField,
     DocumentContentArea,
     Icon,
     StringValue,
     AnyFieldType
 } from '@sitebud/domain-lib';
-import {DocumentData, DataFieldValue, DocumentDataLink} from './types';
-import {TagsList} from '@sitebud/domain-lib/src';
+import {
+    DocumentData,
+    // DataFieldValue,
+    DocumentDataLink
+} from './types';
 
 type AreasSpecification = Record<string, BlocksSpecification>;
 type BlocksSpecification = Record<string, ComponentsSpecification>;
@@ -68,74 +71,61 @@ export abstract class ContentAdapter<T> {
                         break;
                     case 'DocumentsList':
                         if (this._adaptDocumentDataCb) {
-                            const {documentsIds, selectionMode, tags} = (fieldContent as DocumentsList);
-                            const pageContentContextList: Array<any> = [];
+                            const {documentsIds, selectionMode} = (fieldContent as DocumentsList);
+                            let documentsList: {
+                                entriesByParent?: Array<{ portion: Array<any>; portionOrigin: any; }>;
+                                entries?: Array<any>;
+                            } = {};
                             if (documentsIds && documentsIds.length > 0) {
                                 if (selectionMode === 'selectChildrenDocuments') {
+                                    const list: Array<any> = [];
+                                    const byParent: Array<{ portion: Array<any>; portionOrigin: any; }> = [];
                                     for(const parentDocumentId of documentsIds) {
+                                        const listPortionOrigin: any = {};
+                                        const listPortion: Array<any> = [];
                                         if (parentDocumentId && this._documentData.documentDataListByParentId) {
                                             const pageDataLink: DocumentDataLink = this._documentData.documentDataListByParentId[parentDocumentId];
                                             if (pageDataLink && pageDataLink.array) {
+                                                listPortionOrigin.parentTitle = pageDataLink.parentReference?.title;
+                                                listPortionOrigin.parentSlug = pageDataLink.parentReference?.slug;
+                                                listPortionOrigin.parentPath = pageDataLink.parentReference?.path;
                                                 for (const pageData of pageDataLink.array) {
                                                     const adaptedContent: any = this._adaptDocumentDataCb(pageData);
                                                     if (adaptedContent) {
-                                                        pageContentContextList.push(adaptedContent);
+                                                        listPortion.push(adaptedContent);
+                                                        list.push(adaptedContent);
                                                     }
                                                 }
                                             }
                                         }
+                                        byParent.push({
+                                            portion: listPortion,
+                                            portionOrigin: listPortionOrigin
+                                        });
                                     }
+                                    documentsList = {
+                                        entriesByParent: byParent,
+                                        entries: list,
+                                    };
                                 } else {
+                                    const list: Array<any> = [];
                                     for(const documentId of documentsIds) {
                                         if (documentId && this._documentData.documentDataById) {
                                             const pageDataLink: DocumentDataLink = this._documentData.documentDataById[documentId];
                                             if (pageDataLink && pageDataLink.item) {
                                                 const adaptedContent: any = this._adaptDocumentDataCb(pageDataLink.item);
                                                 if (adaptedContent) {
-                                                    pageContentContextList.push(adaptedContent);
+                                                    list.push(adaptedContent);
                                                 }
                                             }
                                         }
                                     }
-                                }
-                            } else if (tags && tags.length > 0) {
-                                for(const tag of tags) {
-                                    if (tag && this._documentData.documentDataListByTag) {
-                                        const pageDataLink: DocumentDataLink = this._documentData.documentDataListByTag[tag];
-                                        if (pageDataLink && pageDataLink.array) {
-                                            for (const pageData of pageDataLink.array) {
-                                                const adaptedContent: any = this._adaptDocumentDataCb(pageData);
-                                                if (adaptedContent) {
-                                                    pageContentContextList.push(adaptedContent);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    documentsList = {
+                                        entries: list
+                                    };
                                 }
                             }
-                            result[name] = pageContentContextList;
-                        }
-                        break;
-                    case 'TagsList':
-                        if (this._adaptDocumentDataCb) {
-                            const pageContentContextList: Array<any> = [];
-                            const {tags} = (fieldContent as TagsList);
-                            if (tags && tags.length > 0) {
-                                for(const tag of tags) {
-                                    if (tag && this._documentData.documentDataListByTag) {
-                                        const pageDataLink: DocumentDataLink = this._documentData.documentDataListByTag[tag];
-                                        if (pageDataLink && pageDataLink.array) {
-                                            for (const pageData of pageDataLink.array) {
-                                                const adaptedContent: any = this._adaptDocumentDataCb(pageData);
-                                                if (adaptedContent) {
-                                                    pageContentContextList.push(adaptedContent);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            result[name] = pageContentContextList;
+                            result[name] = documentsList;
                         }
                         break;
                     default:
@@ -174,7 +164,6 @@ export abstract class ContentAdapter<T> {
                         };
                         break;
                     case 'DocumentsList':
-                    case 'TagsList':
                         result[propSpec.name] = [];
                         break;
                     default:
@@ -263,28 +252,28 @@ export abstract class ContentAdapter<T> {
         return {};
     }
 
-    protected processDataFields(): Record<string, DataFieldValue> {
-        const result: Record<string, DataFieldValue> = {};
-        if (this._documentData.content?.dataFields && this._documentData.content?.dataFields.length > 0) {
-            for (const dataField of this._documentData.content.dataFields) {
-                result[dataField.name] = {
-                    value: dataField.value,
-                    type: dataField.type
-                };
-            }
-        }
-        return result;
-    }
+    // protected processDataFields(): Record<string, DataFieldValue> {
+    //     const result: Record<string, DataFieldValue> = {};
+    //     if (this._documentData.content?.dataFields && this._documentData.content?.dataFields.length > 0) {
+    //         for (const dataField of this._documentData.content.dataFields) {
+    //             result[dataField.name] = {
+    //                 value: dataField.value,
+    //                 type: dataField.type
+    //             };
+    //         }
+    //     }
+    //     return result;
+    // }
 
-    protected processAuthorsProfiles(): Record<string, any> {
-        const result: Record<string, any> = {};
-        if (this._documentData.authorProfiles && this._adaptDocumentDataCb) {
-            for (const documentDataEntry of Object.entries(this._documentData.authorProfiles)) {
-                result[documentDataEntry[0]] = this._adaptDocumentDataCb(documentDataEntry[1]);
-            }
-        }
-        return result;
-    }
+    // protected processAuthorsProfiles(): Record<string, any> {
+    //     const result: Record<string, any> = {};
+    //     if (this._documentData.authorProfiles && this._adaptDocumentDataCb) {
+    //         for (const documentDataEntry of Object.entries(this._documentData.authorProfiles)) {
+    //             result[documentDataEntry[0]] = this._adaptDocumentDataCb(documentDataEntry[1]);
+    //         }
+    //     }
+    //     return result;
+    // }
 
     abstract adapt(): T;
 }

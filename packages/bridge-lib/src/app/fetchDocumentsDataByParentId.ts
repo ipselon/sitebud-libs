@@ -1,9 +1,9 @@
 import {
     SiteMap_Bean,
     DocumentRecord_Bean,
-    findDocument
+    findDocument, DocumentContent_Base
 } from '@sitebud/domain-lib';
-import {DocumentData, FetchOptions} from '../core/types';
+import {DocumentData, FetchOptions, FoundByParentReference} from '../core/types';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
 
 export async function fetchDocumentsDataByParentId(
@@ -12,11 +12,24 @@ export async function fetchDocumentsDataByParentId(
     fetchOptions: FetchOptions,
     nestedLevel: number,
     locale?: string
-): Promise<Array<DocumentData>> {
+): Promise<{parentReference?: FoundByParentReference; array: Array<DocumentData>;}> {
     const resultList: Array<DocumentData> = [];
+    let parentReference: FoundByParentReference | undefined = undefined;
     const foundParentDocumentRecord: DocumentRecord_Bean | undefined = findDocument(siteMap.root, parentDocumentId);
     if (foundParentDocumentRecord && foundParentDocumentRecord.children && foundParentDocumentRecord.children.length > 0) {
-        for (const documentItem of foundParentDocumentRecord.children) {
+        const foundDocumentContent: DocumentContent_Base | undefined = foundParentDocumentRecord.contents[locale || siteMap.defaultLocale];
+        if (foundDocumentContent) {
+            parentReference = {
+                id: foundParentDocumentRecord.id,
+                title: foundDocumentContent.title,
+                slug: foundDocumentContent.slug
+            }
+        }
+        const {requiredDocumentClasses} = fetchOptions;
+        const filteredChildren = requiredDocumentClasses && requiredDocumentClasses.length > 0
+            ? foundParentDocumentRecord.children.filter(i => requiredDocumentClasses.includes(i.documentClass))
+            : foundParentDocumentRecord.children;
+        for (const documentItem of filteredChildren) {
             try {
                 resultList.push(await fetchDocumentDataById(siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
             } catch (e: any) {
@@ -24,5 +37,5 @@ export async function fetchDocumentsDataByParentId(
             }
         }
     }
-    return resultList;
+    return {parentReference, array: resultList};
 }

@@ -5,4 +5,10 @@ export type DataFieldType = 'string' | 'number';
 export type DocumentContentContext = {
 <% classes.forEach(function(classItem) {%><%= lowerFirst(classItem.className) %>Content?: <%= upperFirst(classItem.className)%>Content;<% }); %>
 };
+export type DocumentsListField = {
+    entriesByParent?: Array<{ portion: Array<DocumentContentContext>; portionOrigin: any; }>;
+    entries?: Array<DocumentContentContext>;
+};
+export type ImageField = { src: string; alt: string; focusX?: number; focusY?: number; };
+export type LinkField = { href: string; target: string; };
 `;

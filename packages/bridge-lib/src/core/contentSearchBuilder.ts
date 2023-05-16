@@ -5,7 +5,10 @@ import {
     iterateDocumentContentAreas,
     iterateDocumentContentAreaBlocks,
     iterateDocumentContentAreaBlockComponents,
-    iterateDocumentContentAreaBlockComponentInstances, HeaderText, ParagraphText, StringValue
+    iterateDocumentContentAreaBlockComponentInstances,
+    HeaderText,
+    ParagraphText,
+    StringValue
 } from '@sitebud/domain-lib';
 import {DocumentContent} from './types';
 

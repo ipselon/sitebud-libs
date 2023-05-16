@@ -95,7 +95,7 @@ const fixDocumentAreas = (documentClass: DocumentClass) => (documentContent?: Do
 }
 
 const fixDataFields = (documentClass: DocumentClass) => (documentContent?: DocumentContent_Bean): void => {
-    if (documentContent) {
+    if (documentContent && documentClass.dataFields) {
         let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(documentClass.dataFields);
         dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
             return a[1].indexNumber - b[1].indexNumber;

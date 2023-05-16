@@ -26,7 +26,12 @@ export async function fetchDocumentDataById(
     if (!documentContent) {
         throw Error(`Document "${documentId}" content for "${locale}" locale is not found.`);
     }
-    const {accessLevel, requiredDocumentAreas} = fetchOptions;
+    const {accessLevel, requiredDocumentAreas, requiredDocumentClasses} = fetchOptions;
+    if (requiredDocumentClasses && requiredDocumentClasses.length > 0) {
+        if (!requiredDocumentClasses.includes(document.documentClass)) {
+            return {};
+        }
+    }
     if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
         if (nestedLevel > 0) {
             documentContent.documentAreas = filterAreas(documentContent.documentAreas, requiredDocumentAreas);

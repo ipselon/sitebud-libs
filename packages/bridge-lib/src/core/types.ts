@@ -8,7 +8,7 @@ import type {
     AnyField,
     DocumentContent_Bean,
     SiteMap_Bean,
-    DocumentContentDataFieldType,
+    // DocumentContentDataFieldType,
     DocumentsList,
     DocumentType
 } from '@sitebud/domain-lib';
@@ -24,21 +24,36 @@ export type {
     AnyField,
 };
 
-export type DataFieldValue = {
-    type: DocumentContentDataFieldType,
-    value: string;
-};
+// export type DataFieldValue = {
+//     type: DocumentContentDataFieldType,
+//     value: string;
+// };
 
 export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
 
 export type DocumentDataLinkOptions = {
     documentAreas: Array<string>;
+    documentClasses: Array<string>;
 };
 
 export type DocumentDataLink = {
     options: DocumentDataLinkOptions;
     array?: Array<DocumentData>;
     item?: DocumentData;
+    // tagReference?: FoundByTagReference;
+    parentReference?: FoundByParentReference;
+};
+
+// export type FoundByTagReference = {
+//     name: string;
+//     path?: string;
+// };
+
+export type FoundByParentReference = {
+    id: string;
+    title: string;
+    slug: string;
+    path?: string;
 };
 
 export type DocumentData = {
@@ -50,12 +65,12 @@ export type DocumentData = {
     path?: string;
     locale?: string;
     hasRestrictedAreas?: boolean;
-    tagsLinks?: Record<string, string>;
+    // tagsLinks?: Record<string, string>;
     availableLocales?: Array<string>;
-    documentDataListByTag?: Record<string, DocumentDataLink>;
+    // documentDataListByTag?: Record<string, DocumentDataLink>;
     documentDataListByParentId?: Record<string, DocumentDataLink>;
     documentDataById?: Record<string, DocumentDataLink>;
-    authorProfiles?: Record<string, DocumentData>;
+    // authorProfiles?: Record<string, DocumentData>;
 };
 
 export type DocumentPathParams = {
@@ -74,10 +89,6 @@ export type DocumentContext = {
     documentId: string;
     documentType: DocumentType;
     documentContent: DocumentContent_Bean;
-};
-
-export type SiteMapDataContext_Proxy = {
-    siteMap: SiteMap_Bean;
 };
 
 export type SiteMap_IndexBean = {
@@ -104,5 +115,6 @@ export type RequestOptions = {
 
 export type FetchOptions = RequestOptions & {
     requiredDocumentAreas?: Array<string>;
+    requiredDocumentClasses?: Array<string>;
 };
 

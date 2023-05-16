@@ -110,12 +110,14 @@ export class DataContentAdapterGenerator {
             documentAreasNames: [],
             documentAreas: {}
         };
-        let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(this._documentClass.dataFields);
-        dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
-            return a[1].indexNumber - b[1].indexNumber;
-        });
-        for (const dataFieldClassTuple of dataFieldClassTuples) {
-            result.dataFields.push(dataFieldClassTuple[0]);
+        if (this._documentClass.dataFields) {
+            let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(this._documentClass.dataFields);
+            dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
+                return a[1].indexNumber - b[1].indexNumber;
+            });
+            for (const dataFieldClassTuple of dataFieldClassTuples) {
+                result.dataFields.push(dataFieldClassTuple[0]);
+            }
         }
         const documentAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.documentAreas);
         result.documentAreasNames = documentAreasTemplateObject.areasNames;
