@@ -14,9 +14,7 @@
   "module": "lib/index.esm.js",
   "types": "lib/types",
   "dependencies": {
-    "idb": "7.1.1",
-    "@xmldom/xmldom": "0.8.7",
-    "xpath": "0.0.32"
+    "idb": "7.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "24.0.0",

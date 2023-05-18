@@ -21,8 +21,6 @@ export default {
         'react',
         'react-dom',
         'idb',
-        '@xmldom/xmldom',
-        'xpath',
         '@sitebud/domain-lib'
     ],
     plugins: [

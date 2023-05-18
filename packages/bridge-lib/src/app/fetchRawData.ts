@@ -5,7 +5,6 @@ import {createDocumentPathDataList} from '../core/documentPathDataFactory';
 import {fetchSiteMapData} from './fetchSiteMapData';
 import {fetchDocumentData} from './fetchDocumentData';
 // import {fetchDocumentDataById} from './fetchDocumentDataById';
-import {putIntoSearch} from './putIntoSearch';
 import {fetchLinkedData} from './fetchDocumentLinkedData';
 
 // async function fetchExtraData(
@@ -62,7 +61,6 @@ export async function fetchRawData(requestOptions: RequestOptions, locale?: stri
     const pageData: DocumentData = await fetchData(siteMap, fetchOptions, locale, slug);
     let siteData: DocumentData = await fetchData(siteMap, fetchOptions, locale, '@site');
     // siteData = await fetchExtraData(siteData, siteMap, fetchOptions, locale);
-    await putIntoSearch(pageData, locale || siteMap.defaultLocale);
     return {
         pageData,
         siteData

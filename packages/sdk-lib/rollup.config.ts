@@ -31,7 +31,9 @@ export default [
             'prettier/parser-typescript',
             'prettier/standalone',
             'react',
-            'react-dom'
+            'react-dom',
+            '@xmldom/xmldom',
+            'xpath',
         ],
         plugins: [
             resolve(),

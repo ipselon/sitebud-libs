@@ -1,6 +1,7 @@
 import {DOMParser} from '@xmldom/xmldom';
 import xpath from 'xpath';
 import {
+    DocumentContent_Bean,
     DocumentContentArea,
     iterateDocumentContentAreas,
     iterateDocumentContentAreaBlocks,
@@ -10,7 +11,6 @@ import {
     ParagraphText,
     StringValue
 } from '@sitebud/domain-lib';
-import {DocumentContent} from './types';
 
 function extractTextFromHtml(htmlString: string): string {
     const parser = new DOMParser();
@@ -23,7 +23,7 @@ function extractTextFromHtml(htmlString: string): string {
     return text.trim();
 }
 
-export function buildSearchText(documentContent: DocumentContent): string {
+export function buildSearchText(documentContent: DocumentContent_Bean): string {
     let resultText: string = '';
     iterateDocumentContentAreas(documentContent.documentAreas, (area: DocumentContentArea) => {
         iterateDocumentContentAreaBlocks(area.blocks, (block) => {
