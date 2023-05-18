@@ -34,6 +34,7 @@ export default [
             'react-dom',
             '@xmldom/xmldom',
             'xpath',
+            'klaw-sync'
         ],
         plugins: [
             resolve(),
