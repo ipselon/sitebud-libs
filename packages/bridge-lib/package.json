@@ -1,6 +1,6 @@
 {
   "name": "@sitebud/bridge-lib",
-  "version": "1.0.0-alpha.11",
+  "version": "1.0.0-alpha.12",
   "description": "SiteBud bridge library",
   "author": "Oleksandr Pustovalov <apustovalov@gmail.com>",
   "license": "MIT",
