@@ -16,9 +16,8 @@ interface PreviewDataProviderProps {
 }
 
 const octokitCDNScript: string = `
-import { Octokit, App } from 'https://cdn.skypack.dev/octokit';
+import { Octokit } from 'https://cdn.jsdelivr.net/npm/@octokit/core@4.2.1/+esm';
 window.Octokit = Octokit;
-window.App = App;
 `;
 
 
