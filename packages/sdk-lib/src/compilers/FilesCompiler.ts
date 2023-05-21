@@ -1,6 +1,6 @@
 import path from 'path';
 import type {DocumentClass_Index, Document_Bean} from '@sitebud/domain-lib';
-import {fixDocument} from '@sitebud/domain-lib';
+import {fixDocument} from './fixDocument';
 import {generateJsonFile, readObjectFromFile, readAllFilesInDir} from '../utilities';
 import {FileDescription} from '../utilities/types';
 

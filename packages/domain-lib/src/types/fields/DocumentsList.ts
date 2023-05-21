@@ -6,8 +6,6 @@ export type DocumentsListSelectionMode =
 export type DocumentsList = {
     selectionMode: DocumentsListSelectionMode;
     documentsIds?: Array<string>;
-    // tags?: Array<string>;
-    isRequired?: boolean;
     selectDocumentClasses?: Array<string>;
     selectDocumentAreas?: Array<string>;
     allowedDocumentClasses?: Array<string>;

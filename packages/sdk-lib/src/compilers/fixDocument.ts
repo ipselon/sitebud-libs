@@ -4,26 +4,62 @@ import {
     DocumentContentBlock,
     DocumentClass_Index,
     DocumentClass,
-    DocumentContentDataFieldClass,
     DocumentContentArea,
     DocumentContentAreaClass,
     DocumentContentBlockClass,
     DocumentContentBlockComponentClass,
-    DocumentContentBlockComponentField
-} from '../types';
-import {
+    DocumentContentBlockComponentField,
+    DocumentContentBlockComponent,
+    DocumentContentBlockComponentFieldClass,
     iterateDocumentContentAreaBlocks,
     iterateDocumentContentAreaBlockComponents,
     iterateDocumentContentAreaBlockComponentInstances,
     iterateDocumentContentAreas,
     iterateDocumentContents
-} from './documentUtils';
+} from '@sitebud/domain-lib';
+import {nanoid} from 'nanoid';
 
 export function fixDocumentContentBlocks(blocks: Array<DocumentContentBlock>, areaClass?: DocumentContentAreaClass) {
     iterateDocumentContentAreaBlocks(blocks, (block) => {
-        const {components, name} = block;
-        const foundBlockClass: DocumentContentBlockClass | undefined = areaClass?.blocks[name];
-        iterateDocumentContentAreaBlockComponents(components, (component) => {
+        // const {components, name} = block;
+        const foundBlockClass: DocumentContentBlockClass | undefined = areaClass?.blocks[block.name];
+        const newBlockComponents: Array<DocumentContentBlockComponent> = [];
+        if (foundBlockClass) {
+            let componentClassTuples: Array<[string, DocumentContentBlockComponentClass]> = Object.entries(foundBlockClass.components);
+            componentClassTuples = componentClassTuples.sort((a, b) => {
+                return a[1].indexNumber - b[1].indexNumber;
+            });
+            let indexNumber: number = 0;
+            for (const componentClass of componentClassTuples) {
+                const foundComponentIndex = block.components.findIndex(c => c.name === componentClass[0]);
+                if (foundComponentIndex < 0) {
+                    let fieldClassTuples: Array<[string, DocumentContentBlockComponentFieldClass]> = Object.entries(componentClass[1].props);
+                    fieldClassTuples = fieldClassTuples.sort((a, b) => {
+                        return a[1].indexNumber - b[1].indexNumber;
+                    });
+                    const instanceProps: Array<DocumentContentBlockComponentField> = [];
+                    for (const fieldClassTuple of fieldClassTuples) {
+                        instanceProps.push({
+                            name: fieldClassTuple[0],
+                            type: fieldClassTuple[1].type,
+                            fieldContent: fieldClassTuple[1].fieldContent
+                        });
+                    }
+                    block.components.splice(indexNumber, 0, {
+                        name: componentClass[0],
+                        isArray: componentClass[1].isArray,
+                        instances: [
+                            {
+                                id: nanoid(),
+                                props: instanceProps
+                            }
+                        ]
+                    })
+                }
+                indexNumber++;
+            }
+        }
+        iterateDocumentContentAreaBlockComponents(block.components, (component) => {
             const {instances, name} = component;
             const foundComponentClass: DocumentContentBlockComponentClass | undefined = foundBlockClass?.components[name];
             iterateDocumentContentAreaBlockComponentInstances(instances, (instance) => {
@@ -51,9 +87,6 @@ export function fixDocumentContentBlocks(blocks: Array<DocumentContentBlock>, ar
 
 const fixDocumentContent = (documentClass: DocumentClass) => (documentContent?: DocumentContent_Bean): void => {
     if (documentContent) {
-        if (!documentContent.dataFields) {
-            documentContent.dataFields = [];
-        }
         if (!documentContent.documentAreas) {
             documentContent.documentAreas = [];
         }
@@ -65,12 +98,6 @@ const fixDocumentContent = (documentClass: DocumentClass) => (documentContent?: 
             const foundAreaClass: DocumentContentAreaClass | undefined = documentClass.documentAreas[area.name];
             fixDocumentContentBlocks(area.blocks, foundAreaClass);
         });
-        if (!documentContent.statusMap) {
-            documentContent.statusMap = {};
-        }
-        if (!documentContent.tags) {
-            documentContent.tags = {};
-        }
     }
 }
 
@@ -94,27 +121,6 @@ const fixDocumentAreas = (documentClass: DocumentClass) => (documentContent?: Do
     }
 }
 
-const fixDataFields = (documentClass: DocumentClass) => (documentContent?: DocumentContent_Bean): void => {
-    if (documentContent && documentClass.dataFields) {
-        let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(documentClass.dataFields);
-        dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
-            return a[1].indexNumber - b[1].indexNumber;
-        });
-        let indexNumber: number = 0;
-        for (const dataFieldClassTuple of dataFieldClassTuples) {
-            const foundIndex: number = documentContent.dataFields.findIndex(i => i.name === dataFieldClassTuple[0]);
-            if (foundIndex < 0) {
-                documentContent.dataFields.splice(indexNumber, 0, {
-                    name: dataFieldClassTuple[0],
-                    value: dataFieldClassTuple[1].defaultValue || '',
-                    type: dataFieldClassTuple[1].dataType
-                });
-            }
-            indexNumber++;
-        }
-    }
-}
-
 export function fixDocument(document: Document_Bean, documentClassIndex: DocumentClass_Index): Document_Bean {
     if (document) {
         const foundDocumentClass: DocumentClass | undefined = documentClassIndex[document.documentClass];
@@ -123,7 +129,6 @@ export function fixDocument(document: Document_Bean, documentClassIndex: Documen
         }
         iterateDocumentContents(document, fixDocumentContent(foundDocumentClass));
         iterateDocumentContents(document, fixDocumentAreas(foundDocumentClass));
-        iterateDocumentContents(document, fixDataFields(foundDocumentClass));
     }
     return document;
 }

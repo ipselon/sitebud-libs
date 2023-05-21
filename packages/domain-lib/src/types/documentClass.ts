@@ -10,6 +10,7 @@ export type DocumentContentBlockComponentFieldClass = {
     label?: string;
     type: AnyFieldType;
     indexNumber: number;
+    isRequired?: boolean;
     fieldContent: AnyField;
     fieldContentVariants?: Array<DocumentContentBlockComponentFieldVariant>;
 };
