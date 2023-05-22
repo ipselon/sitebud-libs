@@ -7,7 +7,6 @@ import {
     ParagraphText,
     Link,
     DocumentsList,
-    // DocumentContentDataField,
     DocumentContentArea,
     Icon,
     StringValue,
@@ -15,7 +14,6 @@ import {
 } from '@sitebud/domain-lib';
 import {
     DocumentData,
-    // DataFieldValue,
     DocumentDataLink
 } from './types';
 
@@ -251,29 +249,6 @@ export abstract class ContentAdapter<T> {
         }
         return {};
     }
-
-    // protected processDataFields(): Record<string, DataFieldValue> {
-    //     const result: Record<string, DataFieldValue> = {};
-    //     if (this._documentData.content?.dataFields && this._documentData.content?.dataFields.length > 0) {
-    //         for (const dataField of this._documentData.content.dataFields) {
-    //             result[dataField.name] = {
-    //                 value: dataField.value,
-    //                 type: dataField.type
-    //             };
-    //         }
-    //     }
-    //     return result;
-    // }
-
-    // protected processAuthorsProfiles(): Record<string, any> {
-    //     const result: Record<string, any> = {};
-    //     if (this._documentData.authorProfiles && this._adaptDocumentDataCb) {
-    //         for (const documentDataEntry of Object.entries(this._documentData.authorProfiles)) {
-    //             result[documentDataEntry[0]] = this._adaptDocumentDataCb(documentDataEntry[1]);
-    //         }
-    //     }
-    //     return result;
-    // }
 
     abstract adapt(): T;
 }

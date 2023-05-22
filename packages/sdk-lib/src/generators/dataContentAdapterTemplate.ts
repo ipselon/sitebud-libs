@@ -11,8 +11,8 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             <% if (documentType !== 'site') {%>dateUpdated: content?.dateUpdated,<% } %>
             <% if (documentType !== 'site') {%>authors: content?.authors,<% } %>
             <% if (documentType !== 'site') {%>path: path || '',<% } %>
-            <% if (documentType !== 'site') {%>locale,<% } %>
-            hasRestrictedAreas,
+            <% if (documentType !== 'site') {%>locale: locale || '',<% } %>
+            hasRestrictedAreas: !!hasRestrictedAreas,
             baseUrl: baseUrl || '',
             <% if (documentType === 'site') {%>availableLocales: availableLocales || [],<% } %>
             <% // if (dataFields && dataFields.length > 0) { %>

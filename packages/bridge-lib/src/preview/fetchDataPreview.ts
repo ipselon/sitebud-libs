@@ -4,7 +4,6 @@ import {
     Document_Bean,
     DocumentContent_Bean,
     findDocument,
-    // getAllDocuments,
     DocumentContent_Base
 } from '@sitebud/domain-lib';
 import {createDocumentData, enhanceDocumentData} from '../core/documentDataFactory';
@@ -14,7 +13,6 @@ import type {
     RequestOptions,
     FetchOptions,
     FoundByParentReference,
-    // FoundByTagReference
 } from '../core/types';
 import {removeRestrictedBlocks, filterAreas} from '../core/documentDataUtility';
 import {setImageResolver} from '../core/imageResolver';
@@ -30,6 +28,7 @@ import {PreviewConfig} from './PreviewBus';
 import {FileDataFetchingStatus} from './types';
 import {getChanges, setChangesBulk} from './memoryStorage';
 import {getFromCache, putIntoCache, getCacheKeys, delFromCache} from './storage/localStorage';
+import {documentDataDefault} from '../core/defaultBeans';
 
 let branchDataStatus: { status: 'uninitialized' | 'fetching' | 'done' | 'error' } = {status: 'uninitialized'};
 
@@ -185,7 +184,7 @@ async function fetchDocumentDataById(
     nestedLevel: number,
     locale: string
 ): Promise<DocumentData> {
-    let result: DocumentData = {};
+    let result: DocumentData = {...documentDataDefault};
     const ownerLogin: string | undefined = previewConfig.owner;
     const repoName: string = previewConfig.repo;
     let document: Document_Bean | undefined;
@@ -233,7 +232,7 @@ async function fetchDocumentDataBySlug(
     locale: string,
     documentSlug?: string
 ): Promise<DocumentData> {
-    let result: DocumentData = {};
+    let result: DocumentData = {...documentDataDefault};
     let foundDocument: DocumentRecord_Bean | undefined;
     if (documentSlug) {
         foundDocument = findDocumentBySlug(siteMap.root, documentSlug, locale);
@@ -279,33 +278,6 @@ async function fetchDocumentsDataByParentId(
     }
     return {parentReference, array: resultList};
 }
-
-// async function fetchDocumentsDataByTag(
-//     previewConfig: PreviewConfig,
-//     siteMap: SiteMap_Bean,
-//     fetchOptions: FetchOptions,
-//     nestedLevel: number,
-//     tag: string,
-//     locale: string
-// ): Promise<{tagReference?: FoundByTagReference; array: Array<DocumentData>;}> {
-//     const resultList: Array<DocumentData> = [];
-//     let tagReference: FoundByTagReference | undefined = undefined;
-//     const foundDocumentRecords: Array<DocumentRecord_Bean> = getAllDocuments(siteMap.root, (documentRecord: DocumentRecord_Bean) => {
-//         const foundDocumentContent: DocumentContent_Base | undefined = documentRecord.contents[locale];
-//         return !!foundDocumentContent && foundDocumentContent.tags[tag] >= 1;
-//     });
-//     tagReference = {name: tag};
-//     if (foundDocumentRecords && foundDocumentRecords.length > 0) {
-//         for (const documentItem of foundDocumentRecords) {
-//             try {
-//                 resultList.push(await fetchDocumentDataById(previewConfig, siteMap, documentItem.id, fetchOptions, nestedLevel, locale));
-//             } catch (e) {
-//                 // do nothing
-//             }
-//         }
-//     }
-//     return {tagReference, array: resultList};
-// }
 
 async function fetchSiteMap(previewConfig: PreviewConfig): Promise<SiteMap_Bean> {
     const ownerLogin: string | undefined = previewConfig.owner;
@@ -390,40 +362,6 @@ async function fetchDocumentLinkedData(
             }
         }
     }
-    // if (documentDataListByTag) {
-    //     for (const tagDataLink of Object.entries(documentDataListByTag)) {
-    //         const {tagReference, array} = await fetchDocumentsDataByTag(
-    //             previewConfig,
-    //             siteMap,
-    //             {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
-    //             level,
-    //             tagDataLink[0],
-    //             locale
-    //         );
-    //         tagDataLink[1].tagReference = tagReference;
-    //         if (array.length > 0) {
-    //             const fetchedDataList: Array<DocumentData> = [];
-    //             for (const tagDocumentData of array) {
-    //                 if (tagDocumentData && tagDocumentData.content) {
-    //                     if (level < 2) {
-    //                         const documentWithLinkedData: DocumentData = await fetchDocumentLinkedData(
-    //                             tagDocumentData,
-    //                             previewConfig,
-    //                             siteMap,
-    //                             fetchOptions,
-    //                             locale,
-    //                             level + 1
-    //                         );
-    //                         fetchedDataList.push(documentWithLinkedData);
-    //                     } else {
-    //                         fetchedDataList.push(tagDocumentData);
-    //                     }
-    //                 }
-    //             }
-    //             tagDataLink[1].array = fetchedDataList;
-    //         }
-    //     }
-    // }
     return enhanceDocumentData(documentData, siteMap, locale);
 }
 
@@ -470,33 +408,6 @@ export async function fetchImageData(
 ): Promise<string> {
     return await fetchImageFromBranch(filePath, previewConfig, noCache);
 }
-
-// export async function fetchExtraData(
-//     documentData: DocumentData,
-//     previewConfig: PreviewConfig,
-//     siteMap: SiteMap_Bean,
-//     fetchOptions: FetchOptions,
-//     locale: string
-// ): Promise<DocumentData> {
-//     documentData.authorProfiles = {};
-//     if (siteMap.authorsDocumentIds) {
-//         const localeAuthorDocumentIds: Record<string, string> | undefined = siteMap.authorsDocumentIds[locale];
-//         if (localeAuthorDocumentIds) {
-//             for (const authorDocumentId of Object.entries(localeAuthorDocumentIds)) {
-//                 const authorProfileDocumentData: DocumentData = await fetchDocumentDataById(
-//                     previewConfig,
-//                     siteMap,
-//                     authorDocumentId[1],
-//                     {...fetchOptions, requiredDocumentAreas: ['*']},
-//                     1,
-//                     locale
-//                 );
-//                 documentData.authorProfiles[authorDocumentId[0]] = enhanceDocumentData(authorProfileDocumentData, siteMap, locale);
-//             }
-//         }
-//     }
-//     return documentData;
-// }
 
 export async function fetchDataPreview(
     changesData: any,

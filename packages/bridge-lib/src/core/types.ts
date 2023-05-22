@@ -8,7 +8,6 @@ import type {
     AnyField,
     DocumentContent_Bean,
     SiteMap_Bean,
-    // DocumentContentDataFieldType,
     DocumentsList,
     DocumentType
 } from '@sitebud/domain-lib';
@@ -24,11 +23,6 @@ export type {
     AnyField,
 };
 
-// export type DataFieldValue = {
-//     type: DocumentContentDataFieldType,
-//     value: string;
-// };
-
 export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
 
 export type DocumentDataLinkOptions = {
@@ -40,14 +34,8 @@ export type DocumentDataLink = {
     options: DocumentDataLinkOptions;
     array?: Array<DocumentData>;
     item?: DocumentData;
-    // tagReference?: FoundByTagReference;
     parentReference?: FoundByParentReference;
 };
-
-// export type FoundByTagReference = {
-//     name: string;
-//     path?: string;
-// };
 
 export type FoundByParentReference = {
     id: string;
@@ -57,20 +45,17 @@ export type FoundByParentReference = {
 };
 
 export type DocumentData = {
-    id?: string;
-    name?: string;
-    type?: DocumentType;
-    content?: DocumentContent;
-    baseUrl?: string;
-    path?: string;
-    locale?: string;
-    hasRestrictedAreas?: boolean;
-    // tagsLinks?: Record<string, string>;
-    availableLocales?: Array<string>;
-    // documentDataListByTag?: Record<string, DocumentDataLink>;
-    documentDataListByParentId?: Record<string, DocumentDataLink>;
-    documentDataById?: Record<string, DocumentDataLink>;
-    // authorProfiles?: Record<string, DocumentData>;
+    id: string | null;
+    name: string | null;
+    type: DocumentType | null;
+    content: DocumentContent | null;
+    baseUrl: string | null;
+    path: string | null;
+    locale: string | null;
+    hasRestrictedAreas: boolean | null;
+    availableLocales: Array<string> | null;
+    documentDataListByParentId: Record<string, DocumentDataLink> | null;
+    documentDataById: Record<string, DocumentDataLink> | null;
 };
 
 export type DocumentPathParams = {

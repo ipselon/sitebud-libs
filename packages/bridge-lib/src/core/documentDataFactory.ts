@@ -13,8 +13,9 @@ import {
 } from './types';
 import {imageResolverInstance} from './imageResolver';
 import {isRestrictedBlock} from './documentDataUtility';
+import {documentDataDefault} from './defaultBeans';
 
-const BASE_URL: string | undefined = process.env.SB_WEBSITE_BASE_URL;
+const BASE_URL: string | null = process.env.SB_WEBSITE_BASE_URL || null;
 
 export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
     let localResult: Record<string, boolean> = {};
@@ -160,16 +161,9 @@ async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentDat
 }
 
 export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
-    const newDocumentData: DocumentData = {};
+    const newDocumentData: DocumentData = {...documentDataDefault};
     if (documentContext) {
         const {documentClass, documentContent, locale, documentId, documentType} = documentContext;
-        // if (documentContent.dataFields && documentContent.dataFields.length > 0) {
-        //     for (const dataField of documentContent.dataFields) {
-        //         if (dataField.type === 'string' && dataField.value && dataField.value.startsWith("/_assets/images")) {
-        //             dataField.value = await imageResolverInstance(dataField.value);
-        //         }
-        //     }
-        // }
         let restrictedAreasCount: number = 0;
         if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
             for (const documentArea of documentContent.documentAreas) {
@@ -179,12 +173,12 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
                 await processBlocks(documentArea.blocks, newDocumentData);
             }
         }
-        newDocumentData.id = documentId;
-        newDocumentData.content = documentContent;
-        newDocumentData.locale = locale;
-        newDocumentData.name = documentClass;
-        newDocumentData.type = documentType;
-        newDocumentData.baseUrl = BASE_URL;
+        newDocumentData.id = documentId || null;
+        newDocumentData.content = documentContent || null;
+        newDocumentData.locale = locale || null;
+        newDocumentData.name = documentClass || null;
+        newDocumentData.type = documentType || null;
+        newDocumentData.baseUrl = BASE_URL || null;
         newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     }
     return newDocumentData;
@@ -192,23 +186,18 @@ export async function createDocumentData(documentContext: DocumentContext): Prom
 
 export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): DocumentData {
     const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, {}, siteMap.defaultLocale, locale);
-    // const validLocale: string = locale || siteMap.defaultLocale;
     if (documentData.id) {
-        documentData.path = siteIndex[documentData.id].nodePath;
+        documentData.path = siteIndex[documentData.id].nodePath || null;
     }
-    // const localeTagsLinks: Record<string, string> | undefined = siteMap.tagsLinks
-    //     ? siteMap.tagsLinks[validLocale]
-    //     : undefined;
     const {
         documentDataListByParentId,
         documentDataById,
-        // documentDataListByTag
     } = documentData;
     if (documentDataById) {
         for (const documentDataItem of Object.entries(documentDataById)) {
-            const itemId: string | undefined = documentDataItem[1]?.item?.id;
+            const itemId: string | null = documentDataItem[1]?.item?.id || null;
             if (itemId && documentDataItem[1].item) {
-                documentDataItem[1].item.path = siteIndex[itemId].nodePath;
+                documentDataItem[1].item.path = siteIndex[itemId].nodePath || null;
             }
         }
     }
@@ -222,40 +211,13 @@ export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap
             if (documentDataParentItem[1].array && documentDataParentItem[1].array.length > 0) {
                 for (const documentDataItem of documentDataParentItem[1].array) {
                     if (documentDataItem.id && siteIndex[documentDataItem.id]) {
-                        documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
+                        documentDataItem.path = siteIndex[documentDataItem.id].nodePath || null;
                     }
                 }
             }
         }
     }
-    // if (documentDataListByTag) {
-    //     for (const documentDataTagItem of Object.entries(documentDataListByTag)) {
-    //         if (documentDataTagItem[1].tagReference && localeTagsLinks) {
-    //             const tagDocumentId: string | undefined = localeTagsLinks[documentDataTagItem[1].tagReference.name];
-    //             if (siteIndex[tagDocumentId]) {
-    //                 documentDataTagItem[1].tagReference.path = siteIndex[tagDocumentId].nodePath;
-    //             }
-    //         }
-    //         if (documentDataTagItem[1].array && documentDataTagItem[1].array.length > 0) {
-    //             for (const documentDataItem of documentDataTagItem[1].array) {
-    //                 if (documentDataItem.id && siteIndex[documentDataItem.id]) {
-    //                     documentDataItem.path = siteIndex[documentDataItem.id].nodePath;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    // documentData.tagsLinks = {};
-    // if (documentData.type === 'site') {
-    //     if (localeTagsLinks) {
-    //         for (const tagLink of Object.entries(localeTagsLinks)) {
-    //             if (siteIndex[tagLink[1]]) {
-    //                 documentData.tagsLinks[tagLink[0]] = siteIndex[tagLink[1]].nodePath;
-    //             }
-    //         }
-    //     }
-    //     documentData.availableLocales = Object.keys(getAllLocales(siteMap.root));
-    // }
+    documentData.availableLocales = Object.keys(getAllLocales(siteMap.root));
     return documentData;
 }
 

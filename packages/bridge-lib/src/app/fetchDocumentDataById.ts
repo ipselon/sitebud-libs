@@ -7,6 +7,7 @@ import type {DocumentData, FetchOptions} from '../core';
 import {createDocumentData} from '../core/documentDataFactory';
 import {readDataFromFile} from './readDataFromFile';
 import {removeRestrictedBlocks, filterAreas, clearIds} from '../core/documentDataUtility';
+import {documentDataDefault} from '../core/defaultBeans';
 
 export async function fetchDocumentDataById(
     siteMap: SiteMap_Bean,
@@ -29,7 +30,7 @@ export async function fetchDocumentDataById(
     const {accessLevel, requiredDocumentAreas, requiredDocumentClasses} = fetchOptions;
     if (requiredDocumentClasses && requiredDocumentClasses.length > 0) {
         if (!requiredDocumentClasses.includes(document.documentClass)) {
-            return {};
+            return {...documentDataDefault};
         }
     }
     if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {

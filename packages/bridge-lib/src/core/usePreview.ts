@@ -2,6 +2,7 @@ import {useEffect, useRef, useReducer, useState} from 'react';
 import {DocumentData, Data, RequestOptions} from './types';
 import {fetchDataPreview} from '../preview/fetchDataPreview';
 import {PreviewBus} from '../preview/PreviewBus';
+import {documentDataDefault} from './defaultBeans';
 
 type PreviewStatus = {
     status: 'success' | 'error' | 'uninitialized' | 'loading';
@@ -22,8 +23,8 @@ export type PreviewState = PreviewData & PreviewStatus;
 
 const initialState: PreviewState = {
     status: 'uninitialized',
-    pageDataPreview: {},
-    siteDataPreview: {},
+    pageDataPreview: {...documentDataDefault},
+    siteDataPreview: {...documentDataDefault},
 };
 
 function reducer(state: PreviewState, action: PreviewStateAction): PreviewState {
@@ -84,8 +85,8 @@ export const usePreview = (isPreview: boolean, locale: string, requestOptions: R
                             type: 'changeAll',
                             newStatus: {status: 'error', error: `Preview Error. ${error.message}`},
                             newData: {
-                                pageDataPreview: {},
-                                siteDataPreview: {}
+                                pageDataPreview: {...documentDataDefault},
+                                siteDataPreview: {...documentDataDefault}
                             }
                         });
                     });

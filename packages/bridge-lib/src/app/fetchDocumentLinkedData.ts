@@ -3,7 +3,6 @@ import {enhanceDocumentData} from '../core/documentDataFactory';
 import {DocumentData, FetchOptions} from '../core/types';
 import {fetchDocumentsDataByParentId} from './fetchDocumentsDataByParentId';
 import {fetchDocumentDataById} from './fetchDocumentDataById';
-// import {fetchDocumentsDataByTag} from './fetchDocumentsDataByTag';
 
 export async function fetchLinkedData(
     documentData: DocumentData,
@@ -15,7 +14,6 @@ export async function fetchLinkedData(
     const {
         documentDataListByParentId,
         documentDataById,
-        // documentDataListByTag
     } = documentData;
     if (documentDataListByParentId) {
         for (const parentDataLink of Object.entries(documentDataListByParentId)) {
@@ -83,36 +81,5 @@ export async function fetchLinkedData(
             }
         }
     }
-    // if (documentDataListByTag) {
-    //     for (const tagDataLink of Object.entries(documentDataListByTag)) {
-    //         const {tagReference, array} = await fetchDocumentsDataByTag(
-    //             siteMap,
-    //             tagDataLink[0],
-    //             {...fetchOptions, requiredDocumentAreas: tagDataLink[1].options.documentAreas},
-    //             level,
-    //             locale
-    //         );
-    //         tagDataLink[1].tagReference = tagReference;
-    //         if (array.length > 0) {
-    //             const fetchedDataList: Array<DocumentData> = [];
-    //             for (const taggedDocumentData of array) {
-    //                 if (level < 2) {
-    //                     // go to recursion
-    //                     const withLinkedData: DocumentData = await fetchLinkedData(
-    //                         taggedDocumentData,
-    //                         siteMap,
-    //                         fetchOptions,
-    //                         locale,
-    //                         level + 1
-    //                     );
-    //                     fetchedDataList.push(withLinkedData);
-    //                 } else {
-    //                     fetchedDataList.push(taggedDocumentData);
-    //                 }
-    //             }
-    //             tagDataLink[1].array = fetchedDataList;
-    //         }
-    //     }
-    // }
     return enhanceDocumentData(documentData, siteMap, locale);
 }
