@@ -48,6 +48,7 @@ export function PreviewNotification(props: PreviewNotificationProps) {
                     left: '1em',
                     padding: '1px',
                     display: 'flex',
+                    flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'start',
                     backgroundColor: '#ffffff',
@@ -63,11 +64,28 @@ export function PreviewNotification(props: PreviewNotificationProps) {
                         borderRadius: '4px',
                         padding: '0.5em 1em',
                         fontSize: '12px',
+                        whiteSpace: 'nowrap',
                         ...styles[severity]
                     }}
                 >
                     {message}
                 </div>
+                {severity === 'error' && (
+                    <div
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '4px',
+                            padding: '0.5em 1em',
+                            fontSize: '12px',
+                            backgroundColor: '#f5f5f5',
+                            color: '#1e293b',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        <a href="/api/clear-preview">Exit Preview Mode</a>
+                    </div>
+                )}
             </div>
         )
     }

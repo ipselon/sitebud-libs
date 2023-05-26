@@ -87,7 +87,7 @@ export class PreviewBus {
                 self._changesData = {};
                 this._timeoutId = undefined;
                 callback('Can not connect to the opener');
-            }, 3000);
+            }, 2000);
             sendMessageToOpener({type: 'PREVIEW_CONFIG_REQUEST'});
         } catch (e: any) {
             if (this._timeoutId) {
