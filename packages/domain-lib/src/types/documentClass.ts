@@ -1,6 +1,10 @@
 import {AnyFieldType, AnyField} from './fields';
 import {DocumentType, DocumentContentDataFieldType} from './document';
 
+export type DocumentContentBlockComponentFieldOptions = {
+    multipleVariants?: boolean;
+};
+
 export type DocumentContentBlockComponentFieldVariant = {
     label: string;
     fieldContent: AnyField;
@@ -13,6 +17,7 @@ export type DocumentContentBlockComponentFieldClass = {
     isRequired?: boolean;
     fieldContent: AnyField;
     fieldContentVariants?: Array<DocumentContentBlockComponentFieldVariant>;
+    fieldContentOptions?: DocumentContentBlockComponentFieldOptions;
 };
 
 export type DocumentContentBlockComponentClass = {
