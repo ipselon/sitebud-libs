@@ -1,5 +1,5 @@
 export const adaptersIndexTemplate: string = `
-export * from './ContentAdapterProvider';
+export * from './AdaptedDataProvider';
 export * from './hooks';
 export * from './types';
 `;

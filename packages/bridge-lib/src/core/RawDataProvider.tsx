@@ -1,24 +1,20 @@
 import React from 'react';
-import {DocumentData} from './types';
-import {PageDataProvider} from './PageDataProvider';
-import {SiteDataProvider} from './SiteDataProvider';
+import {Data} from './types';
+import {DataProvider} from './DataProvider';
 
 interface RawDataProviderProps {
-    siteData?: DocumentData;
-    pageData?: DocumentData;
+    data?: Data;
     custom404: React.ReactNode;
     children: React.ReactNode;
 }
 
 export function RawDataProvider(props: RawDataProviderProps) {
-    const {siteData, pageData, custom404, children} = props;
-    if (pageData && pageData.content && siteData) {
+    const {data, custom404, children} = props;
+    if (data && data.documentId) {
         return (
-            <SiteDataProvider siteData={siteData}>
-                <PageDataProvider pageData={pageData}>
-                    {children}
-                </PageDataProvider>
-            </SiteDataProvider>
+            <DataProvider data={data}>
+                {children}
+            </DataProvider>
         );
     }
     return <>{custom404}</>;

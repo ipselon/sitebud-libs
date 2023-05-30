@@ -1,7 +1,7 @@
 export const dataContentTypeTemplate: string = `
 <% function printProps(componentName, componentProps) { componentProps.forEach(function(prop) { %><% if (prop.type === 'Image') { %><%= prop.name %>: ImageField;<% } else if (prop.type === 'HeaderText') { %><%= prop.name %>: string;<% } else if (prop.type === 'ParagraphText') { %><%= prop.name %>: string;<% } else if (prop.type === 'Link') { %><%= prop.name %>: LinkField;<% } else if (prop.type === 'DocumentsList') { %><%= prop.name %>: DocumentsListField;<% } else if (prop.type === 'Icon')  { %><%= prop.name %>: string;<% } else if (prop.type === 'StringValue')  { %><%= prop.name %>: string;<% } %>
 <% });} %> 
-import {DocumentContentContext, DocumentsListField, ImageField, LinkField<% if (dataFields && dataFields.length > 0) { %>, DataFieldType<% } %>} from './types';
+import {DocumentsListField, ImageField, LinkField} from './types';
 
 <% if (documentAreasNames && documentAreasNames.length > 0) { %>
 <% forOwn(documentAreas, function(areaObject, areaName) { %>
@@ -44,33 +44,17 @@ export type <%= upperFirst(className) %>_DocumentAreas = {
 
 <% } %>
  
-<% if (dataFields && dataFields.length > 0) { %>
-/**
- * Data Fields
- */
- export type <%= upperFirst(className) %>_DataFields = {
-    <% dataFields.forEach(function(dataFieldName) { %><%= dataFieldName %>?: {value: string; type: DataFieldType;};
-    <% }); %>
- };
- <% } %>
- 
 /**
  * Document Content
  */
 export type <%= upperFirst(className) %>Content = {
     <% if (documentType !== 'site') {%>title: string;<% } %>
     <% if (documentType !== 'site') {%>slug: string;<% } %>
-    <% // if (documentType !== 'site') {%><% //tags: Record<string, number>; %><% // } %>
     <% if (documentType !== 'site') {%>dateUpdated?: number;<% } %>
     <% if (documentType !== 'site') {%>authors?: Record<string, number>;<% } %>
     <% if (documentType !== 'site') {%>path: string;<% } %>
     <% if (documentType !== 'site') {%>locale?: string;<% } %>
     hasRestrictedAreas?: boolean;
-    baseUrl: string;
-    <% if (documentType === 'site') {%>availableLocales: Array<string>;<% } %>
-    <% // if (documentType === 'site') {%><% // tagsLinks: Record<string, string>; %><% // } %>
-    <% // if (documentType === 'site') {%><% // authorProfiles: Record<string, DocumentContentContext>; %><% // } %>
-    <% // if (dataFields && dataFields.length > 0) { %><% // dataFields: %><% // upperFirst(className) %><% // _DataFields; %><% // } %>
     <% if (documentAreasNames && documentAreasNames.length > 0) { %>documentAreas: <%= upperFirst(className) %>_DocumentAreas;<% } %>
 };
 `;

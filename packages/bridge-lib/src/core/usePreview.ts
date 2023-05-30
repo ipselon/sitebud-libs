@@ -1,16 +1,16 @@
 import {useEffect, useRef, useReducer, useState} from 'react';
-import {DocumentData, Data, RequestOptions} from './types';
+import {Data, RequestOptions, SiteTree} from './types';
 import {fetchDataPreview} from '../preview/fetchDataPreview';
 import {PreviewBus} from '../preview/PreviewBus';
-import {documentDataDefault} from './defaultBeans';
+import {siteTreeDefault, cloneDeep} from './defaultBeans';
 
 type PreviewStatus = {
     status: 'success' | 'error' | 'uninitialized' | 'loading';
     error?: string;
 }
 type PreviewData = {
-    pageDataPreview: DocumentData;
-    siteDataPreview: DocumentData;
+    documentIdPreview: string;
+    siteTreePreview: SiteTree;
 };
 
 type PreviewStateAction = {
@@ -23,8 +23,8 @@ export type PreviewState = PreviewData & PreviewStatus;
 
 const initialState: PreviewState = {
     status: 'uninitialized',
-    pageDataPreview: {...documentDataDefault},
-    siteDataPreview: {...documentDataDefault},
+    documentIdPreview: '',
+    siteTreePreview: cloneDeep(siteTreeDefault),
 };
 
 function reducer(state: PreviewState, action: PreviewStateAction): PreviewState {
@@ -75,8 +75,8 @@ export const usePreview = (isPreview: boolean, locale: string, requestOptions: R
                             type: 'changeAll',
                             newStatus: {status: 'success'},
                             newData: {
-                                pageDataPreview: dataPreview.pageData,
-                                siteDataPreview: dataPreview.siteData
+                                documentIdPreview: dataPreview.documentId,
+                                siteTreePreview: dataPreview.siteTree,
                             }
                         });
                     })
@@ -85,8 +85,8 @@ export const usePreview = (isPreview: boolean, locale: string, requestOptions: R
                             type: 'changeAll',
                             newStatus: {status: 'error', error: `Preview Error. ${error.message}`},
                             newData: {
-                                pageDataPreview: {...documentDataDefault},
-                                siteDataPreview: {...documentDataDefault}
+                                documentIdPreview: '',
+                                siteTreePreview: cloneDeep(siteTreeDefault),
                             }
                         });
                     });

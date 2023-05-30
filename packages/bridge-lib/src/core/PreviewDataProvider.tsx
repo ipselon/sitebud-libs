@@ -1,7 +1,6 @@
 import React from 'react';
 import {PreviewNotification} from '../preview/PreviewNotification';
-import {PageDataProvider} from './PageDataProvider';
-import {SiteDataProvider} from './SiteDataProvider';
+import {DataProvider} from './DataProvider';
 import {usePreview} from './usePreview';
 import {PreviewModeMark} from '../preview/PreviewModeMark';
 import {RequestOptions} from './types';
@@ -24,7 +23,7 @@ window.Octokit = Octokit;
 export function PreviewDataProvider(props: PreviewDataProviderProps) {
     const {Script, custom404, locale, requestOptions, slug, children} = props;
 
-    const {status, siteDataPreview, pageDataPreview, error} = usePreview(
+    const {status, siteTreePreview, documentIdPreview, error} = usePreview(
         true,
         locale,
         {
@@ -35,7 +34,7 @@ export function PreviewDataProvider(props: PreviewDataProviderProps) {
 
     let content: JSX.Element;
     let notification: JSX.Element | null = null;
-    if (pageDataPreview?.content) {
+    if (documentIdPreview) {
         if (status === 'uninitialized' || status === 'loading') {
             notification = (
                 <PreviewNotification message="Please wait. Loading data from GitHub..." />
@@ -46,12 +45,10 @@ export function PreviewDataProvider(props: PreviewDataProviderProps) {
             );
         }
         content = (
-            <SiteDataProvider siteData={siteDataPreview}>
-                <PageDataProvider pageData={pageDataPreview}>
-                    {notification}
-                    {children}
-                </PageDataProvider>
-            </SiteDataProvider>
+            <DataProvider data={{siteTree: siteTreePreview, documentId: documentIdPreview}}>
+                {notification}
+                {children}
+            </DataProvider>
         );
     } else {
         if (status === 'uninitialized' || status === 'loading') {

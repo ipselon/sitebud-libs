@@ -13,8 +13,7 @@ import {
     AnyFieldType
 } from '@sitebud/domain-lib';
 import {
-    DocumentData,
-    DocumentDataLink
+    DocumentData
 } from './types';
 
 type AreasSpecification = Record<string, BlocksSpecification>;
@@ -22,15 +21,11 @@ type BlocksSpecification = Record<string, ComponentsSpecification>;
 type ComponentsSpecification = Record<string, PropsSpecification>;
 type PropsSpecification = Array<{name: string, type: AnyFieldType}>;
 
-type AdaptDocumentDataCallBack = (documentData: DocumentData) => any;
-
 export abstract class ContentAdapter<T> {
     protected readonly _documentData: DocumentData;
-    protected readonly _adaptDocumentDataCb: AdaptDocumentDataCallBack | undefined;
 
-    public constructor(pageData: DocumentData, adaptDocumentDataCb?: AdaptDocumentDataCallBack | undefined) {
+    public constructor(pageData: DocumentData) {
         this._documentData = pageData;
-        this._adaptDocumentDataCb = adaptDocumentDataCb;
     }
 
     private processProps(props: Array<DocumentContentBlockComponentField>, propsSpec: PropsSpecification): Record<string, any> {
@@ -68,62 +63,19 @@ export abstract class ContentAdapter<T> {
                         };
                         break;
                     case 'DocumentsList':
-                        if (this._adaptDocumentDataCb) {
-                            const {documentsIds, selectionMode} = (fieldContent as DocumentsList);
-                            let documentsList: {
-                                entriesByParent?: Array<{ portion: Array<any>; portionOrigin: any; }>;
-                                entries?: Array<any>;
-                            } = {};
-                            if (documentsIds && documentsIds.length > 0) {
-                                if (selectionMode === 'selectChildrenDocuments') {
-                                    const list: Array<any> = [];
-                                    const byParent: Array<{ portion: Array<any>; portionOrigin: any; }> = [];
-                                    for(const parentDocumentId of documentsIds) {
-                                        const listPortionOrigin: any = {};
-                                        const listPortion: Array<any> = [];
-                                        if (parentDocumentId && this._documentData.documentDataListByParentId) {
-                                            const pageDataLink: DocumentDataLink = this._documentData.documentDataListByParentId[parentDocumentId];
-                                            if (pageDataLink && pageDataLink.array) {
-                                                listPortionOrigin.parentTitle = pageDataLink.parentReference?.title;
-                                                listPortionOrigin.parentSlug = pageDataLink.parentReference?.slug;
-                                                listPortionOrigin.parentPath = pageDataLink.parentReference?.path;
-                                                for (const pageData of pageDataLink.array) {
-                                                    const adaptedContent: any = this._adaptDocumentDataCb(pageData);
-                                                    if (adaptedContent) {
-                                                        listPortion.push(adaptedContent);
-                                                        list.push(adaptedContent);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        byParent.push({
-                                            portion: listPortion,
-                                            portionOrigin: listPortionOrigin
-                                        });
-                                    }
-                                    documentsList = {
-                                        entriesByParent: byParent,
-                                        entries: list,
-                                    };
-                                } else {
-                                    const list: Array<any> = [];
-                                    for(const documentId of documentsIds) {
-                                        if (documentId && this._documentData.documentDataById) {
-                                            const pageDataLink: DocumentDataLink = this._documentData.documentDataById[documentId];
-                                            if (pageDataLink && pageDataLink.item) {
-                                                const adaptedContent: any = this._adaptDocumentDataCb(pageDataLink.item);
-                                                if (adaptedContent) {
-                                                    list.push(adaptedContent);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    documentsList = {
-                                        entries: list
-                                    };
-                                }
+                        const {documentsIds, selectionMode} = (fieldContent as DocumentsList);
+                        if (documentsIds && documentsIds.length > 0) {
+                            if (selectionMode === 'selectChildrenDocuments') {
+                                result[name] = {
+                                    parentDocumentIds: [...documentsIds]
+                                };
+                            } else {
+                                result[name] = {
+                                    documentIds: [...documentsIds]
+                                };
                             }
-                            result[name] = documentsList;
+                        } else {
+                            result[name] = {};
                         }
                         break;
                     default:
@@ -162,7 +114,7 @@ export abstract class ContentAdapter<T> {
                         };
                         break;
                     case 'DocumentsList':
-                        result[propSpec.name] = [];
+                        result[propSpec.name] = {};
                         break;
                     default:
                         break;

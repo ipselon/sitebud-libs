@@ -1,4 +1,15 @@
-import {DocumentContentArea, DocumentContentBlock} from '@sitebud/domain-lib';
+import {
+    DocumentContentArea,
+    DocumentContentBlock,
+    DocumentsList,
+    DocumentRecord_Bean,
+    iterateDocumentContentAreas,
+    iterateDocumentContentAreaBlocks,
+    iterateDocumentContentAreaBlockComponents,
+    iterateDocumentContentAreaBlockComponentInstances,
+    iterateDocumentContentAreaBlockComponentFields
+} from '@sitebud/domain-lib';
+import {SiteMapIndex} from './types';
 
 export function isRestrictedBlock(blocks: Array<DocumentContentBlock>): boolean {
     return blocks
@@ -70,4 +81,48 @@ export function clearIds(
         }
     }
     return areas;
+}
+
+export function getLinkedDocumentIds(areas: Array<DocumentContentArea>, siteIndex: SiteMapIndex): Array<string> {
+    let resultIds: Array<string> = [];
+    iterateDocumentContentAreas(areas, (area) => {
+        iterateDocumentContentAreaBlocks(area.blocks, (block) => {
+            iterateDocumentContentAreaBlockComponents(block.components, (component) => {
+                iterateDocumentContentAreaBlockComponentInstances(component.instances, (instance) => {
+                    iterateDocumentContentAreaBlockComponentFields(instance.props, (property) => {
+                        if (property) {
+                            const {fieldContent, type} = property;
+                            if (type === 'DocumentsList') {
+                                const {
+                                    documentsIds,
+                                    selectionMode,
+                                    selectDocumentClasses
+                                } = fieldContent as DocumentsList;
+                                if (documentsIds && documentsIds.length > 0) {
+                                    for (const documentId of documentsIds) {
+                                        const foundIndexRecord: DocumentRecord_Bean | undefined = siteIndex[documentId].node;
+                                        if (foundIndexRecord) {
+                                            if (selectionMode === 'selectChildrenDocuments') {
+                                                if (foundIndexRecord.children && foundIndexRecord.children.length > 0) {
+                                                    const filteredChildren: Array<DocumentRecord_Bean> = selectDocumentClasses && selectDocumentClasses.length > 0
+                                                        ? foundIndexRecord.children.filter(
+                                                            i => selectDocumentClasses.includes(i.documentClass)
+                                                        )
+                                                        : foundIndexRecord.children;
+                                                    resultIds = resultIds.concat(filteredChildren.map(i => i.id));
+                                                }
+                                            } else if (selectionMode === 'selectDocuments') {
+                                                resultIds.push(foundIndexRecord.id);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    });
+    return resultIds;
 }

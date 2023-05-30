@@ -4,7 +4,7 @@ import {<%= upperFirst(className) %>Content,<% if (documentAreasNames && documen
 
 export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<%= upperFirst(className) %>Content> {
     adapt(): <%= upperFirst(className) %>Content {
-        const {content, hasRestrictedAreas, baseUrl<% if (documentType !== 'site') {%>, path, locale<% } %><% if (documentType === 'site') {%>, availableLocales<% } %>} = this._documentData;
+        const {hasRestrictedAreas<% if (documentType !== 'site') {%>, content, path, locale<% } %>} = this._documentData;
         const result: <%= upperFirst(className) %>Content = {
             <% if (documentType !== 'site') {%>title: content?.title || 'undefined',<% } %>
             <% if (documentType !== 'site') {%>slug: content?.slug || 'undefined',<% } %>
@@ -13,20 +13,12 @@ export class <%= upperFirst(className) %>ContentAdapter extends ContentAdapter<<
             <% if (documentType !== 'site') {%>path: path || '',<% } %>
             <% if (documentType !== 'site') {%>locale: locale || '',<% } %>
             hasRestrictedAreas: !!hasRestrictedAreas,
-            baseUrl: baseUrl || '',
-            <% if (documentType === 'site') {%>availableLocales: availableLocales || [],<% } %>
-            <% // if (dataFields && dataFields.length > 0) { %>
-            <% // dataFields: {}, %>
-            <% // } %>
             <% if (documentAreasNames && documentAreasNames.length > 0) { %>
             documentAreas: {
                 <% documentAreasNames.forEach(function(areaName) {%><%= areaName %>: [],<% }); %>
             },
             <% } %>
         };
-        <% // if (dataFields && dataFields.length > 0) { %>
-        <% // result.dataFields = this.processDataFields(); %>
-        <% // } %>
         <% if (documentAreasNames && documentAreasNames.length > 0) {%>
         result.documentAreas = this.processDocumentAreas({
             <% forOwn(documentAreas, function(areaObject, areaName) { %>

@@ -9,14 +9,13 @@ import {
     DocumentContentBlockComponentClass,
     AnyFieldType,
     DocumentContentBlockComponentFieldClass,
-    DocumentContentDataFieldClass,
     DocumentContentAreaClass,
     DocumentType
 } from '@sitebud/domain-lib';
 import {formatTS, removeEmptyLines} from './prettierWrapper';
 import {dataContentTypeTemplate} from './dataContentTypeTemplate';
 import {dataContentAdapterTemplate} from './dataContentAdapterTemplate';
-import {dataContentAdapterProviderTemplate} from './dataContentAdapterProviderTemplate';
+import {adaptedDataProviderTemplate} from './adaptedDataProviderTemplate';
 
 type TemplatePropObject = { name: string; type: AnyFieldType };
 type TemplateComponentObject = {
@@ -37,7 +36,6 @@ type TemplateObject = {
     forOwn: any;
     className: string;
     documentType: DocumentType;
-    dataFields: Array<string>;
     documentAreasNames: Array<string>;
     documentAreas: Record<string, TemplateAreaObject>;
 };
@@ -106,19 +104,9 @@ export class DataContentAdapterGenerator {
             forOwn,
             documentType: this._documentClass.type,
             className: this._className,
-            dataFields: [],
             documentAreasNames: [],
             documentAreas: {}
         };
-        if (this._documentClass.dataFields) {
-            let dataFieldClassTuples: Array<[string, DocumentContentDataFieldClass]> = Object.entries(this._documentClass.dataFields);
-            dataFieldClassTuples = dataFieldClassTuples.sort((a, b) => {
-                return a[1].indexNumber - b[1].indexNumber;
-            });
-            for (const dataFieldClassTuple of dataFieldClassTuples) {
-                result.dataFields.push(dataFieldClassTuple[0]);
-            }
-        }
         const documentAreasTemplateObject: AreasTemplateObject = this.createAreasTemplateObject(this._documentClass.documentAreas);
         result.documentAreasNames = documentAreasTemplateObject.areasNames;
         result.documentAreas = documentAreasTemplateObject.areas;
@@ -145,6 +133,6 @@ export class DataContentAdapterGenerator {
     async generate(): Promise<void> {
         await this.generateFile(`${upperFirst(this._className)}Content.ts`, dataContentTypeTemplate);
         await this.generateFile(`${upperFirst(this._className)}ContentAdapter.ts`, dataContentAdapterTemplate);
-        await this.generateFile(`ContentAdapterProvider.tsx`, dataContentAdapterProviderTemplate);
+        await this.generateFile(`AdaptedDataProvider.tsx`, adaptedDataProviderTemplate);
     }
 }

@@ -7,9 +7,9 @@ import type {
     AnyFieldType,
     AnyField,
     DocumentContent_Bean,
-    SiteMap_Bean,
     DocumentsList,
-    DocumentType
+    DocumentType,
+    DocumentRecord_Bean
 } from '@sitebud/domain-lib';
 
 export type {
@@ -23,39 +23,16 @@ export type {
     AnyField,
 };
 
-export type DocumentContent = Omit<DocumentContent_Bean, 'isCustomSlug' | 'statusMap'>;
-
-export type DocumentDataLinkOptions = {
-    documentAreas: Array<string>;
-    documentClasses: Array<string>;
-};
-
-export type DocumentDataLink = {
-    options: DocumentDataLinkOptions;
-    array?: Array<DocumentData>;
-    item?: DocumentData;
-    parentReference?: FoundByParentReference;
-};
-
-export type FoundByParentReference = {
-    id: string;
-    title: string;
-    slug: string;
-    path?: string;
-};
+export type DocumentContent = Partial<DocumentContent_Bean>;
 
 export type DocumentData = {
     id: string | null;
     name: string | null;
     type: DocumentType | null;
     content: DocumentContent | null;
-    baseUrl: string | null;
     path: string | null;
     locale: string | null;
     hasRestrictedAreas: boolean | null;
-    availableLocales: Array<string> | null;
-    documentDataListByParentId: Record<string, DocumentDataLink> | null;
-    documentDataById: Record<string, DocumentDataLink> | null;
 };
 
 export type DocumentPathParams = {
@@ -67,25 +44,14 @@ export type DocumentPathData = {
     locale?: string;
 };
 
-export type DocumentContext = {
-    locale: string;
-    siteMap: SiteMap_Bean;
-    documentClass: string;
-    documentId: string;
-    documentType: DocumentType;
-    documentContent: DocumentContent_Bean;
-};
-
-export type SiteMap_IndexBean = {
+export type SiteMapIndexRecord = {
     nodePath: string;
+    node: DocumentRecord_Bean;
+    slug?: string;
+    title?: string;
 };
 
-export type SiteMap_Index = Record<string, SiteMap_IndexBean>;
-
-export type Data = {
-    pageData: DocumentData;
-    siteData: DocumentData;
-};
+export type SiteMapIndex = Record<string, SiteMapIndexRecord>;
 
 export type SearchIndexItem = {
     keyPath: string;
@@ -94,12 +60,26 @@ export type SearchIndexItem = {
     chunks: Array<string>;
 }
 
+export type SiteTreeNode = {
+    id: string;
+    name: string;
+    path: string;
+    documentClass: string;
+    documentData?: DocumentData;
+    children: Array<SiteTreeNode>;
+};
+
+export type SiteTree = {
+    root: SiteTreeNode;
+};
+
 export type RequestOptions = {
     accessLevel: number;
 };
 
-export type FetchOptions = RequestOptions & {
-    requiredDocumentAreas?: Array<string>;
-    requiredDocumentClasses?: Array<string>;
-};
+export type FetchOptions = RequestOptions;
 
+export type Data = {
+    documentId: string;
+    siteTree: SiteTree;
+};

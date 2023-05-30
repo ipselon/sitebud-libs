@@ -35,14 +35,6 @@ export type DocumentContentBlock = {
     components: Array<DocumentContentBlockComponent>;
 };
 
-export type DocumentContentDataFieldType = 'string' | 'number';
-export type DocumentContentDataField = {
-    name: string;
-    type: DocumentContentDataFieldType;
-    value: string;
-    dataSetField?: string;
-};
-
 export type DocumentContentArea = {
     name: string;
     blocks: Array<DocumentContentBlock>;
@@ -52,7 +44,6 @@ export type DocumentContent_Base = {
     // required fields for system
     title: string;
     slug: string;
-    tags: Record<string, number>;
     includeInSiteMap?: boolean;
     dateUpdated?: number;
     isCustomSlug?: boolean;
@@ -60,7 +51,6 @@ export type DocumentContent_Base = {
 };
 
 export type DocumentContent_Bean = DocumentContent_Base & {
-    dataFields: Array<DocumentContentDataField>;
     documentAreas: Array<DocumentContentArea>;
     statusMap: DocumentContentStatusMap;
 };

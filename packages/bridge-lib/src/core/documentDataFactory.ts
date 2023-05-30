@@ -1,44 +1,30 @@
 import {
     Image,
     DocumentContentBlock,
-    DocumentsList,
     DocumentRecord_Bean,
     DocumentContent_Base,
-    SiteMap_Bean
+    DocumentContent_Bean,
+    DocumentType,
 } from '@sitebud/domain-lib';
 import {
     DocumentData,
-    DocumentContext,
-    SiteMap_Index
+    SiteMapIndex
 } from './types';
 import {imageResolverInstance} from './imageResolver';
 import {isRestrictedBlock} from './documentDataUtility';
-import {documentDataDefault} from './defaultBeans';
-
-const BASE_URL: string | null = process.env.SB_WEBSITE_BASE_URL || null;
-
-export function getAllLocales(root: DocumentRecord_Bean): Record<string, boolean> {
-    let localResult: Record<string, boolean> = {};
-    Object.keys(root.contents).forEach(locale => {
-        localResult[locale] = true;
-    });
-    if (root.children && root.children.length > 0) {
-        let childDocument: DocumentRecord_Bean;
-        for (childDocument of root.children) {
-            localResult = {...localResult, ...getAllLocales(childDocument)};
-        }
-    }
-    return localResult;
-}
+import {
+    documentDataDefault,
+    cloneDeep
+} from './defaultBeans';
 
 export function makeSiteIndex(
     root: DocumentRecord_Bean,
-    accumulator: SiteMap_Index = {},
+    accumulator: SiteMapIndex = {},
     defaultLocale: string,
     locale?: string,
     rootNodePath?: Array<DocumentRecord_Bean>
-): SiteMap_Index {
-    let accumulatorLocal: SiteMap_Index = {...accumulator};
+): SiteMapIndex {
+    let accumulatorLocal: SiteMapIndex = {...accumulator};
     let slugPath: string = '';
     const validLocale: string = locale || defaultLocale;
     const localNodePath: Array<DocumentRecord_Bean> = rootNodePath ? [...rootNodePath, root] : [root];
@@ -55,8 +41,12 @@ export function makeSiteIndex(
             }
         });
     }
+    let rootContent: DocumentContent_Base | undefined = root.contents[validLocale];
     accumulatorLocal[root.id] = {
-        nodePath: root.contents[validLocale] ? slugPath.replace('/@site/', '/') : '',
+        nodePath: rootContent ? slugPath.replace('/@site/', '/') : '',
+        node: root,
+        slug: rootContent?.slug,
+        title: rootContent?.title
     };
     if (root.children && root.children.length > 0) {
         let childDocument: DocumentRecord_Bean;
@@ -95,129 +85,80 @@ async function setupSources(documentContentBlock: DocumentContentBlock): Promise
     }
 }
 
-async function processBlocks(blocks: Array<DocumentContentBlock>, newDocumentData: DocumentData): Promise<void> {
+async function processBlocks(blocks: Array<DocumentContentBlock>): Promise<void> {
     if (blocks && blocks.length > 0) {
         for (const documentContentBlock of blocks) {
             await setupSources(documentContentBlock);
-            if (documentContentBlock.components && documentContentBlock.components.length > 0) {
-                for (const documentContentBlockComponent of documentContentBlock.components) {
-                    if (documentContentBlockComponent.instances && documentContentBlockComponent.instances.length > 0) {
-                        for (const componentInstance of documentContentBlockComponent.instances) {
-                            if (componentInstance.props && componentInstance.props.length > 0) {
-                                for (const instanceProp of componentInstance.props) {
-                                    const {type, fieldContent} = instanceProp;
-                                    if (type === 'DocumentsList') {
-                                        const {
-                                            documentsIds,
-                                            // tags,
-                                            selectionMode,
-                                            selectDocumentAreas,
-                                            selectDocumentClasses
-                                        } = fieldContent as DocumentsList;
-                                        if (selectionMode) {
-                                            if (selectionMode === 'selectChildrenDocuments') {
-                                                if (documentsIds && documentsIds.length > 0) {
-                                                    for (const parentDocumentId of documentsIds) {
-                                                        newDocumentData.documentDataListByParentId = newDocumentData.documentDataListByParentId || {};
-                                                        newDocumentData.documentDataListByParentId[parentDocumentId] = {
-                                                            options: {
-                                                                documentAreas: selectDocumentAreas || [],
-                                                                documentClasses: selectDocumentClasses || [],
-                                                            }
-                                                        };
-                                                    }
-                                                }
-                                            } else if (selectionMode === 'selectDocuments') {
-                                                if (documentsIds && documentsIds.length > 0) {
-                                                    for (const documentId of documentsIds) {
-                                                        newDocumentData.documentDataById = newDocumentData.documentDataById || {};
-                                                        newDocumentData.documentDataById[documentId] = {
-                                                            options: {
-                                                                documentAreas: selectDocumentAreas || [],
-                                                                documentClasses: selectDocumentClasses || []
-                                                            }
-                                                        };
-                                                    }
-                                                }
-                                            }
-                                            // else if (selectionMode === 'selectTags') {
-                                            //     if (tags && tags.length > 0) {
-                                            //         for (const tag of tags) {
-                                            //             newDocumentData.documentDataListByTag = newDocumentData.documentDataListByTag || {};
-                                            //             newDocumentData.documentDataListByTag[tag] = {options: {documentAreas: selectDocumentAreas || []}};
-                                            //         }
-                                            //     }
-                                            // }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
 
-export async function createDocumentData(documentContext: DocumentContext): Promise<DocumentData> {
-    const newDocumentData: DocumentData = {...documentDataDefault};
-    if (documentContext) {
-        const {documentClass, documentContent, locale, documentId, documentType} = documentContext;
-        let restrictedAreasCount: number = 0;
-        if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
-            for (const documentArea of documentContent.documentAreas) {
-                if (isRestrictedBlock(documentArea.blocks)) {
-                    restrictedAreasCount++;
-                }
-                await processBlocks(documentArea.blocks, newDocumentData);
+export async function createDocumentData(
+    documentClass: string,
+    documentContent: DocumentContent_Bean,
+    documentId: string,
+    documentType: DocumentType,
+    locale: string,
+    documentPath: string,
+): Promise<DocumentData> {
+    const newDocumentData: DocumentData = cloneDeep(documentDataDefault);
+    let restrictedAreasCount: number = 0;
+    if (documentContent.documentAreas && documentContent.documentAreas.length > 0) {
+        for (const documentArea of documentContent.documentAreas) {
+            if (isRestrictedBlock(documentArea.blocks)) {
+                restrictedAreasCount++;
             }
+            await processBlocks(documentArea.blocks);
         }
-        newDocumentData.id = documentId || null;
-        newDocumentData.content = documentContent || null;
-        newDocumentData.locale = locale || null;
-        newDocumentData.name = documentClass || null;
-        newDocumentData.type = documentType || null;
-        newDocumentData.baseUrl = BASE_URL || null;
-        newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     }
+    newDocumentData.id = documentId || null;
+    newDocumentData.path = documentPath || null;
+    newDocumentData.content = documentContent || null;
+    if (newDocumentData.content) {
+        delete newDocumentData.content.isCustomSlug;
+        delete newDocumentData.content.statusMap;
+    }
+    newDocumentData.locale = locale || null;
+    newDocumentData.name = documentClass || null;
+    newDocumentData.type = documentType || null;
+    newDocumentData.hasRestrictedAreas = restrictedAreasCount > 0;
     return newDocumentData;
 }
 
-export function enhanceDocumentData(documentData: DocumentData, siteMap: SiteMap_Bean, locale?: string): DocumentData {
-    const siteIndex: SiteMap_Index = makeSiteIndex(siteMap.root, {}, siteMap.defaultLocale, locale);
-    if (documentData.id) {
-        documentData.path = siteIndex[documentData.id].nodePath || null;
-    }
-    const {
-        documentDataListByParentId,
-        documentDataById,
-    } = documentData;
-    if (documentDataById) {
-        for (const documentDataItem of Object.entries(documentDataById)) {
-            const itemId: string | null = documentDataItem[1]?.item?.id || null;
-            if (itemId && documentDataItem[1].item) {
-                documentDataItem[1].item.path = siteIndex[itemId].nodePath || null;
-            }
-        }
-    }
-    if (documentDataListByParentId) {
-        for (const documentDataParentItem of Object.entries(documentDataListByParentId)) {
-            if (documentDataParentItem[1].parentReference) {
-                if (documentDataParentItem[1].parentReference.id && siteIndex[documentDataParentItem[1].parentReference.id]) {
-                    documentDataParentItem[1].parentReference.path = siteIndex[documentDataParentItem[1].parentReference.id].nodePath;
-                }
-            }
-            if (documentDataParentItem[1].array && documentDataParentItem[1].array.length > 0) {
-                for (const documentDataItem of documentDataParentItem[1].array) {
-                    if (documentDataItem.id && siteIndex[documentDataItem.id]) {
-                        documentDataItem.path = siteIndex[documentDataItem.id].nodePath || null;
-                    }
-                }
-            }
-        }
-    }
-    documentData.availableLocales = Object.keys(getAllLocales(siteMap.root));
-    return documentData;
-}
-
+// export function enhanceDocumentData(
+//     siteIndex: SiteMapIndex,
+//     documentData: DocumentData
+// ): DocumentData {
+//     if (documentData.id) {
+//         documentData.path = siteIndex[documentData.id].nodePath || null;
+//     }
+//     const {
+//         documentDataListByParentId,
+//         documentDataById,
+//     } = documentData;
+//     if (documentDataById) {
+//         for (const documentDataItem of Object.entries(documentDataById)) {
+//             const itemId: string | null = documentDataItem[1]?.item?.id || null;
+//             if (itemId && documentDataItem[1].item) {
+//                 documentDataItem[1].item.path = siteIndex[itemId].nodePath || null;
+//             }
+//         }
+//     }
+//     if (documentDataListByParentId) {
+//         for (const documentDataParentItem of Object.entries(documentDataListByParentId)) {
+//             if (documentDataParentItem[1].parentReference) {
+//                 if (documentDataParentItem[1].parentReference.id && siteIndex[documentDataParentItem[1].parentReference.id]) {
+//                     documentDataParentItem[1].parentReference.path = siteIndex[documentDataParentItem[1].parentReference.id].nodePath;
+//                 }
+//             }
+//             if (documentDataParentItem[1].array && documentDataParentItem[1].array.length > 0) {
+//                 for (const documentDataItem of documentDataParentItem[1].array) {
+//                     if (documentDataItem.id && siteIndex[documentDataItem.id]) {
+//                         documentDataItem.path = siteIndex[documentDataItem.id].nodePath || null;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return documentData;
+// }

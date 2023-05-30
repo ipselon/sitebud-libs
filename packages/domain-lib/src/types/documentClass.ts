@@ -1,5 +1,5 @@
 import {AnyFieldType, AnyField} from './fields';
-import {DocumentType, DocumentContentDataFieldType} from './document';
+import {DocumentType} from './document';
 
 export type DocumentContentBlockComponentFieldOptions = {
     multipleVariants?: boolean;
@@ -42,22 +42,6 @@ export type DocumentContentBlockClass = {
     components: Record<string, DocumentContentBlockComponentClass>;
 };
 
-export type DocumentContentDataFieldClassVariant = {
-    label: string;
-    value: string;
-    svg?: string; // for start icon in the option item
-};
-export type DocumentContentDataFieldClassInputType = 'text' | 'select' | 'image';
-export type DocumentContentDataFieldClass = {
-    label: string;
-    indexNumber: number;
-    dataType: DocumentContentDataFieldType;
-    inputType: DocumentContentDataFieldClassInputType;
-    variants?: Array<DocumentContentDataFieldClassVariant>;
-    defaultValue?: string;
-    dataSetField?: string;
-};
-
 export type DocumentContentAreaClass = {
     label: string;
     helpText?: string;
@@ -73,7 +57,6 @@ export type DocumentClass = {
     description: string;
     defaultTitle?: string;
     defaultSlug?: string;
-    dataFields?: Record<string, DocumentContentDataFieldClass>;
     documentAreas: Record<string, DocumentContentAreaClass>;
 };
 
