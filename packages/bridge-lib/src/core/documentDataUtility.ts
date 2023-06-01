@@ -100,7 +100,7 @@ export function getLinkedDocumentIds(areas: Array<DocumentContentArea>, siteInde
                                 } = fieldContent as DocumentsList;
                                 if (documentsIds && documentsIds.length > 0) {
                                     for (const documentId of documentsIds) {
-                                        const foundIndexRecord: DocumentRecord_Bean | undefined = siteIndex[documentId].node;
+                                        const foundIndexRecord: DocumentRecord_Bean | undefined = siteIndex[documentId]?.node;
                                         if (foundIndexRecord) {
                                             if (selectionMode === 'selectChildrenDocuments') {
                                                 if (foundIndexRecord.children && foundIndexRecord.children.length > 0) {

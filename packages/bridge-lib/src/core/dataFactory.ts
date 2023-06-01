@@ -25,7 +25,7 @@ async function fetchDocument(
         documentContent.documentAreas = removeRestrictedBlocks(documentContent.documentAreas, accessLevel);
         documentContent.documentAreas = clearIds(documentContent.documentAreas);
     }
-    const documentPath: string = siteIndex[documentId].nodePath;
+    const documentPath: string = siteIndex[documentId]?.nodePath;
     documentDataMap.set(
         documentId,
         await createDocumentData(

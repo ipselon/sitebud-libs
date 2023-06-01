@@ -81,6 +81,7 @@ export const usePreview = (isPreview: boolean, locale: string, requestOptions: R
                         });
                     })
                     .catch((error: any) => {
+                        console.error(error);
                         dispatch({
                             type: 'changeAll',
                             newStatus: {status: 'error', error: `Preview Error. ${error.message}`},
