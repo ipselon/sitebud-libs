@@ -8,6 +8,7 @@ import {formatTS} from './prettierWrapper';
 import {adaptersHooksTemplate} from './adaptersHooksTemplate';
 import {adaptersIndexTemplate} from './adaptersIndexTemplate';
 import {adaptersTypesTemplate} from './adaptersTypesTemplate';
+import {utilitiesTemplate} from './utilitiesTemplate';
 
 type DocumentClassTemplate = {
     className: string;
@@ -76,5 +77,6 @@ export class AdaptersCommonsGenerator {
         await this.generateFile('hooks.ts', adaptersHooksTemplate);
         await this.generateFile('index.ts', adaptersIndexTemplate);
         await this.generateFile('types.ts', adaptersTypesTemplate);
+        await this.generateFile('utils.ts', utilitiesTemplate);
     }
 }

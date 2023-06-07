@@ -18,7 +18,7 @@ function extractTextFromHtml(htmlString: string): string {
     const textNodes = xpath.select('//text()', xmlDoc);
     let text = '';
     for (const textNode of textNodes) {
-        text += (textNode as Node).nodeValue || textNode + ' ';
+        text += ((textNode as Node).nodeValue || textNode) + ' ';
     }
     return text.trim();
 }
